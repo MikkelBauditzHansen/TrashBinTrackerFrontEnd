@@ -3,7 +3,6 @@ const baseUrl = "https://localhost:7159/api/TrashBinTracker";
 Vue.createApp({
     data() {
         return {
-        return {
             bins: [],
             showForm: false,
 
@@ -11,7 +10,7 @@ Vue.createApp({
                 name: "",
                 wasteType: "",
                 location: "",
-                fillLevel: 100
+                fillLevel: 0
             },
 
             message: "",
@@ -49,7 +48,6 @@ Vue.createApp({
                     fillLevel: 0
                 };
 
-                this.message = "Oprettet!";
                 this.message = "Oprettet!";
                 this.error = "";
 
