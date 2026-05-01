@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="da">
+    <head>
+        <meta charset="UTF-8">
+        <title>Smartbin</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    
+    <body class="bg-light">
+        <div id="app" class="container mt-5">
+            <h4>Opret Skraldespand</h4>
+            <input v-model="newBin.name" class="form-control mb-2" placeholder="Navn">
+            <select v-model="newBin.wasteType" class="form-select mb-2">
+                <option disabled value="">Vælg Affaldstype</option>
+                <option value="General">Restaffald</option>
+                <option value="Paper">Papir</option>
+                <option value="Organic">Madaffald</option>
+                <option value="Metal">Metal</option>
+            </select>
+            <input v-model="newBin.location" class="form-control mb-3" placeholder="Lokation">
+            <button v-on:click="addBin" class="btn btn-primary w-100">
+                Opret skraldespand
+            </button>
+            <div class="text-success mt-2" v-if="message">{{ message }}</div>
+            <div class="text-danger mt-2" v-if="error">{{ error }}</div>
+        </div>
+
+        <div class="card p-4 shadow-sm">
+            <h4>Skraldespande</h4>
+        </div>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="index.js"></script>
+
+    </body>
+    </html>
