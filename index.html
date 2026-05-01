@@ -1,36 +1,143 @@
 <!DOCTYPE html>
 <html lang="da">
-    <head>
-        <meta charset="UTF-8">
-        <title>Smartbin</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    
-    <body class="bg-light">
-        <div id="app" class="container mt-5">
-            <h4>Opret Skraldespand</h4>
-            <input v-model="newBin.name" class="form-control mb-2" placeholder="Navn">
-            <select v-model="newBin.wasteType" class="form-select mb-2">
-                <option disabled value="">Vælg Affaldstype</option>
-                <option value="General">Restaffald</option>
-                <option value="Paper">Papir</option>
-                <option value="Organic">Madaffald</option>
-                <option value="Metal">Metal</option>
-            </select>
-            <input v-model="newBin.location" class="form-control mb-3" placeholder="Lokation">
-            <button v-on:click="addBin" class="btn btn-primary w-100">
-                Opret skraldespand
-            </button>
-            <div class="text-success mt-2" v-if="message">{{ message }}</div>
-            <div class="text-danger mt-2" v-if="error">{{ error }}</div>
+<head>
+    <meta charset="UTF-8">
+    <title>Smartbin</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+            height: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        }
+
+        .bin-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .progress {
+            background-color: #e9ecef;
+        }
+
+        /* 5 kort per række på store skærme */
+        .col-5-custom {
+            flex: 0 0 20%;
+            max-width: 20%;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="app" class="container py-5">
+
+    <!-- TITLE -->
+    <div class="mb-2">
+        <h3 class="fw-bold">Skraldespande</h3>
+    </div>
+
+    <!-- BUTTON (under title, over cards) -->
+    <div class="mb-4">
+        <button @click="toggleForm" class="btn btn-success px-4">
+            + Opret skraldespand
+        </button>
+    </div>
+
+    <!-- FORM -->
+    <div v-if="showForm" class="card p-4 shadow-sm mb-4">
+
+        <h5 class="mb-3">Ny skraldespand</h5>
+
+        <input v-model="newBin.name" class="form-control mb-2" placeholder="Navn">
+
+        <select v-model="newBin.wasteType" class="form-select mb-2">
+            <option disabled value="">Vælg Affaldstype</option>
+            <option value="General">Restaffald</option>
+            <option value="Paper">Papir</option>
+            <option value="Organic">Madaffald</option>
+            <option value="Metal">Metal</option>
+        </select>
+
+        <input v-model="newBin.location" class="form-control mb-3" placeholder="Lokation">
+
+        <div class="d-flex gap-2">
+            <button @click="addBin" class="btn btn-primary w-100">Gem</button>
+            <button @click="toggleForm" class="btn btn-outline-secondary w-100">Annuller</button>
         </div>
 
-        <div class="card p-4 shadow-sm">
-            <h4>Skraldespande</h4>
-        </div>
-        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-        <script src="index.js"></script>
+        <div class="text-success mt-2" v-if="message">{{ message }}</div>
+        <div class="text-danger mt-2" v-if="error">{{ error }}</div>
+    </div>
 
-    </body>
-    </html>
+    <!-- GRID -->
+    <div class="row g-4">
+
+        <div v-for="bin in bins" :key="bin.id"
+             class="col-12 col-sm-6 col-md-4 col-lg-3 col-5-custom">
+
+            <div class="card bin-card p-3 shadow-sm">
+
+                <!-- TOP -->
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <h6 class="fw-bold mb-1">{{ bin.name }}</h6>
+                        <small class="text-muted">
+                            {{ translateWaste(bin.wasteType) }}
+                        </small>
+                    </div>
+
+                    <div class="text-end">
+                        <small class="text-muted d-block">
+                            {{ bin.location }}
+                        </small>
+
+                        <span class="fw-bold" :class="getTextColor(bin.fillLevel)">
+                            {{ bin.fillLevel }}%
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- PROGRESS -->
+                <div class="progress mt-3 mb-2" style="height: 6px;">
+                    <div class="progress-bar"
+                         :class="getBarColor(bin.fillLevel)"
+                         :style="{ width: bin.fillLevel + '%' }">
+                    </div>
+                </div>
+
+                <!-- STATUS -->
+                <div class="mt-auto">
+                    <small class="text-muted">
+                        {{ getFillText(bin.fillLevel) }}
+                    </small>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="index.js"></script>
+
+</body>
+</html>
