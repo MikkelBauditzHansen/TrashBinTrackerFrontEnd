@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashbord</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div id="app" class="container mt-5">
+
+    
+    <div class="card p-4 shadow-sm">
+        <h4>Nostifacation</h4>
+
+        <div v-for="Nostifacation in Nostifacations" v-bind:key="Nostifacation.Id" class="card p-3 mb-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1">{{ Nostifacation.trashCanID }}</h5>
+                    <p class="mb-0">{{ Nostifacation.notificationMessage }}</p>
+                    <p class="mb-0">{{ Nostifacation.trashLevel }}</p>
+                    <p class="mb-0">{{ Nostifacation.notificationId }}</p>
+
+
+                </div>
+        </div>
+
+        <div class="text-success mt-2" v-if="message">{{ message }}</div>
+        <div class="text-danger mt-2" v-if="error">{{ error }}</div>
+
+    </div>
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="Dashbord.js"></script>
+
+</body>
+</html>
