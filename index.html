@@ -2,7 +2,7 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <title>Smartbin</title>
+    <title>Smartbin Dashboard</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -23,11 +23,13 @@
             box-shadow: 0 6px 18px rgba(0,0,0,0.1);
         }
 
+        /* ✅ LØSNING 1 */
         .bin-card {
             position: relative;
             display: flex;
             flex-direction: column;
             height: 100%;
+            min-height: 180px;
         }
 
         .top-row {
@@ -37,6 +39,11 @@
         .progress {
             background-color: #e9ecef;
         }
+
+        .sidebar-card {
+            position: sticky;
+            top: 20px;
+        }
     </style>
 </head>
 
@@ -44,173 +51,159 @@
 
 <div id="app" class="container py-5">
 
-    <h3 class="fw-bold mb-4">Skraldespande</h3>
+    <div class="row">
 
-    <!-- BUTTON -->
-    <button @click="toggleForm" class="btn btn-success mb-4">
-        + Opret skraldespand
-    </button>
+        <!-- LEFT SIDE -->
+        <div class="col-md-8">
 
-    <!-- FORM -->
-    <div v-if="showForm" class="card p-4 mb-4 shadow-sm">
+            <h3 class="fw-bold mb-4">Skraldespande</h3>
 
-        <h5 class="mb-3">Ny skraldespand</h5>
+            <button @click="toggleForm" class="btn btn-success mb-4">
+                + Opret skraldespand
+            </button>
 
-        <input v-model="newBin.name" class="form-control mb-2" placeholder="Navn">
+            <!-- FORM -->
+            <div v-if="showForm" class="card p-4 mb-4 shadow-sm">
 
-        <select v-model="newBin.wasteType" class="form-select mb-2">
-            <option disabled value="">Vælg affaldstype</option>
-            <option value="General">Restaffald</option>
-            <option value="Paper">Papir</option>
-            <option value="Organic">Madaffald</option>
-            <option value="Metal">Metal</option>
-        </select>
+                <h5 class="mb-3">Ny skraldespand</h5>
 
-        <!-- LOCATION DROPDOWN -->
-        <select v-model="newBin.locationId" class="form-select mb-2">
-            <option disabled value="">Vælg lokation</option>
-            <option v-for="loc in locations" :value="loc.id">
-                {{ loc.name }} ({{ loc.isIndoor ? 'Indendørs' : 'Udendørs' }})
-            </option>
-        </select>
+                <input v-model="newBin.name" class="form-control mb-2" placeholder="Navn">
 
-        <!-- CREATE LOCATION -->
-        <div class="d-flex gap-2 mb-3">
-            <input v-model="newLocation" class="form-control" placeholder="Ny lokation">
-            <button @click="addLocation" class="btn btn-outline-primary">+</button>
-        </div>
-
-        <!-- MANAGE LOCATIONS -->
-        <div class="mb-3">
-            <div v-for="loc in locations" class="d-flex gap-2 mb-2">
-
-                <input v-model="loc.name" class="form-control form-control-sm">
-
-                <select v-model="loc.isIndoor" class="form-select form-select-sm" style="max-width:120px;">
-                    <option :value="true">Indendørs</option>
-                    <option :value="false">Udendørs</option>
+                <select v-model="newBin.wasteType" class="form-select mb-2">
+                    <option disabled value="">Vælg affaldstype</option>
+                    <option value="General">Restaffald</option>
+                    <option value="Paper">Papir</option>
+                    <option value="Organic">Madaffald</option>
+                    <option value="Metal">Metal</option>
                 </select>
 
-                <button @click="updateLocation(loc)" class="btn btn-sm btn-success">
-                    Gem
-                </button>
+                <select v-model="newBin.locationId" class="form-select mb-2">
+                    <option disabled value="">Vælg lokation</option>
+                    <option v-for="loc in locations" :value="loc.id">
+                        {{ loc.name }} ({{ loc.isIndoor ? 'Indendørs' : 'Udendørs' }})
+                    </option>
+                </select>
 
-                <button @click="deleteLocation(loc.id)" class="btn btn-sm btn-danger">
-                    Slet
-                </button>
-
-            </div>
-        </div>
-
-        <div class="d-flex gap-2">
-            <button @click="addBin" class="btn btn-primary w-100">Gem</button>
-            <button @click="toggleForm" class="btn btn-outline-secondary w-100">Annuller</button>
-        </div>
-
-    </div>
-
-    <!-- GRID -->
-    <div class="row g-4">
-
-        <div v-for="bin in bins" :key="bin.id" class="col-md-4 col-lg-3">
-
-            <div class="card bin-card p-3 shadow-sm">
-
-                <!-- ⋮ TOP RIGHT -->
-                <div class="dropdown position-absolute top-0 end-0 m-2">
-                    <button class="btn btn-light btn-sm border-0"
-                            data-bs-toggle="dropdown">
-                        ⋮
-                    </button>
-
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <button class="dropdown-item" @click="startEdit(bin)">
-                                Rediger
-                            </button>
-                        </li>
-                        <li>
-                            <button class="dropdown-item text-danger" @click="deleteBin(bin)">
-                                Slet
-                            </button>
-                        </li>
-                    </ul>
+                <div class="d-flex gap-2 mb-3">
+                    <input v-model="newLocation" class="form-control" placeholder="Ny lokation">
+                    <button @click="addLocation" class="btn btn-outline-primary">+</button>
                 </div>
 
-                <!-- TOP INFO -->
-                <div class="d-flex justify-content-between top-row">
+                <div class="mb-3">
+                    <div v-for="loc in locations" class="d-flex gap-2 mb-2">
 
-                    <div>
-                        <h6 class="fw-bold mb-1">{{ bin.name }}</h6>
-                        <small class="text-muted">
-                            {{ translateWaste(bin.wasteType) }}
-                        </small>
-                    </div>
+                        <input v-model="loc.name" class="form-control form-control-sm">
 
-                    <div class="text-end">
-                        <small class="text-muted d-block">
-                            {{ getLocationName(bin.locationId) }}
-                        </small>
+                        <select v-model="loc.isIndoor" class="form-select form-select-sm" style="max-width:120px;">
+                            <option :value="true">Indendørs</option>
+                            <option :value="false">Udendørs</option>
+                        </select>
 
-                        <span class="fw-bold" :class="getTextColor(bin.fillLevel)">
-                            {{ bin.fillLevel }}%
-                        </span>
-                    </div>
+                        <button @click="updateLocation(loc)" class="btn btn-sm btn-success">
+                            Gem
+                        </button>
 
-                </div>
+                        <button @click="deleteLocation(loc.id)" class="btn btn-sm btn-danger">
+                            Slet
+                        </button>
 
-                <!-- PROGRESS -->
-                <div class="progress mt-3 mb-2" style="height:6px;">
-                    <div class="progress-bar"
-                         :class="getBarColor(bin.fillLevel)"
-                         :style="{ width: bin.fillLevel + '%' }">
                     </div>
                 </div>
 
-                <small class="text-muted">
-                    {{ getFillText(bin.fillLevel) }}
-                </small>
-
-                <!-- EDIT -->
-                <div v-if="editId === bin.id" class="mt-3">
-
-                    <input v-model="editBin.name" class="form-control mb-2">
-
-                    <select v-model="editBin.wasteType" class="form-select mb-2">
-                        <option value="General">Restaffald</option>
-                        <option value="Paper">Papir</option>
-                        <option value="Organic">Madaffald</option>
-                        <option value="Metal">Metal</option>
-                    </select>
-
-                    <select v-model="editBin.locationId" class="form-select mb-2">
-                        <option v-for="loc in locations" :value="loc.id">
-                            {{ loc.name }}
-                        </option>
-                    </select>
-
-                    <button @click="saveEdit(bin.id)" class="btn btn-success btn-sm me-2">
-                        Gem
-                    </button>
-
-                    <button @click="cancelEdit" class="btn btn-secondary btn-sm">
-                        Annuller
-                    </button>
-
+                <div class="d-flex gap-2">
+                    <button @click="addBin" class="btn btn-primary w-100">Gem</button>
+                    <button @click="toggleForm" class="btn btn-outline-secondary w-100">Annuller</button>
                 </div>
 
             </div>
+
+            <!-- GRID -->
+            <div class="row g-4">
+
+                <div v-for="bin in bins" :key="bin.id"
+                     class="col-md-7 col-lg-5">
+
+                    <div class="card bin-card p-3 shadow-sm">
+
+                        <!-- TOP -->
+                        <div class="d-flex justify-content-between top-row">
+
+                            <div>
+                                <h6 class="fw-bold mb-1">{{ bin.name }}</h6>
+                                <small class="text-muted">
+                                    {{ translateWaste(bin.wasteType) }}
+                                </small>
+                            </div>
+
+                            <div class="text-end">
+                                <small class="text-muted d-block">
+                                    {{ getLocationName(bin.locationId) }}
+                                </small>
+
+                                <span class="fw-bold" :class="getTextColor(bin.fillLevel)">
+                                    {{ bin.fillLevel }}%
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <!-- BUND (LØSNING 1) -->
+                        <div class="mt-auto">
+
+                            <div class="progress mt-3 mb-2" style="height:6px;">
+                                <div class="progress-bar"
+                                     :class="getBarColor(bin.fillLevel)"
+                                     :style="{ width: bin.fillLevel + '%' }">
+                                </div>
+                            </div>
+
+                            <small class="text-muted">
+                                {{ getFillText(bin.fillLevel) }}
+                            </small>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="col-md-4">
+
+            <div class="card p-3 shadow-sm sidebar-card">
+
+                <h5 class="fw-bold mb-3">Notifikationer</h5>
+
+                <div v-for="n in latestNotifications" :key="n.notificationId"
+                     class="border rounded p-2 mb-2">
+
+                    <div class="fw-semibold">
+                        {{ n.notificationMessage }}
+                    </div>
+
+                    <small class="text-muted">
+                        {{ n.trashLevel }}%
+                    </small>
+
+                </div>
+
+                <a href="notifications.html" class="btn btn-outline-primary btn-sm mt-2">
+                    Se alle
+                </a>
+
+            </div>
+
         </div>
 
     </div>
 
 </div>
 
-<!-- SCRIPTS -->
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <script src="index.js"></script>
 
 </body>
