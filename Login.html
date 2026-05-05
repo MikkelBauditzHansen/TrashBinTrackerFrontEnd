@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <div id="app">
+        <h1>Authentication</h1>
+        <div v-if="!loggedIn">
+            <input v-model="auth.username" placeholder="Username" type="text">
+            <input v-model="auth.password" placeholder="Password" type="password">
+            <button @click="login">Login</button>
+            <p v-if="authMessage">{{ authMessage }}</p>
+        </div>
+        <div v-else>
+            <p>
+                Logged in as {{ auth.username }}, role: {{ role }}
+                <button @click="logout">Logout</button>
+            </p>
+        </div>
+        <h2>Search Trash Bins</h2>
+        <input v-model="search" placeholder="Search by name or location">
+        <button v-on:click="getAll">Search</button>
+        <button v-on:click="search=''; getAll()">Reset</button>
+        <button v-on:click="getAll">getAll</button>
+        <ul>
+            <li v-for="bin in bins">
+                Name: {{bin.name}} Waste Type: {{bin.wasteType}} Location ID: {{bin.locationId}} Fill Level: {{bin.fillLevel}}
+            </li>
+        </ul>
+        <div v-if="role === 'Admin'">
+            <h2>Add a new Location</h2>
+            <input v-model="addata.Id" placeholder="ID">
+            <input v-model="addata.name" placeholder="Name">
+            <input v-model="addata.IsIndoor" placeholder="Is Indoor">
+            <button v-on:click="add">Add Location</button>
+        </div>
+                <div v-if="role === 'Admin'">
+            <h2>Add a new bin</h2>
+            <input v-model="addata.name" placeholder="Name">
+            <input v-model="addata.wasteType" placeholder="Waste Type">
+            <input v-model="addata.locationId" placeholder="Location ID">
+            <input v-model.number="addata.fillLevel" placeholder="Fill Level" type="number">
+            <button v-on:click="add">Add Bin</button>
+        </div>
+
+        <div v-if="role === 'Admin'">
+            <h2>Update a bin</h2>
+            <input v-model="updateData.id" placeholder="ID of bin to update">
+            <input v-model="updateData.name" placeholder="New Name">
+            <input v-model="updateData.wasteType" placeholder="New Waste Type">
+            <input v-model="updateData.locationId" placeholder="New Location ID">
+            <input v-model="updateData.fillLevel" placeholder="New Fill Level">
+            <button v-on:click="update">Update Bin</button>
+            <p v-if="updateMessage">{{ updateMessage }}</p>
+        </div>
+
+        <div v-if="role === 'Admin'">
+            <h2>Delete Bin</h2>
+            <input v-model.number="deleteId" placeholder="Bin ID to delete" type="number" />
+            <button v-on:click="deletebin(deleteId)">Delete Bin</button>
+            <p v-if="deleteMessage">{{ deleteMessage }}</p>
+        </div>
+    </div>
+
+
+
+        <script src="Login.js"></script>
+</body>
+</html>
