@@ -149,7 +149,19 @@
                                      :style="{ width: bin.fillLevel + '%' }">
                                 </div>
                             </div>
+                            <div class="mt-2">
+                            <small class="text-muted d-block">
+                              Sidst tømt:
+                            </small>
 
+                            <span class="fw-semibold">
+                                {{ formatDate(bin.lastEmptied) }}
+                            </span>
+                        </div>
+
+                        <button @click="emptyBin(bin)" class="btn btn-outline-success btn-sm mt-2 w-100">
+                            Marker som tømt
+                        </button>
                             <small class="text-muted">
                                 {{ getFillText(bin.fillLevel) }}
                             </small>
