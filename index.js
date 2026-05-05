@@ -121,12 +121,30 @@ Vue.createApp({
             const res = await axios.get(notificationUrl);
             this.notifications = res.data;
         },
+        
 
         getLocationName(id) {
             const loc = this.locations.find(l => l.id === id);
             return loc ? loc.name : "Ukendt";
         },
+async increaseFill(bin) {
 
+    let newLevel = bin.fillLevel + 10;
+    if (newLevel > 100) newLevel = 100;
+
+    const updatedBin = {
+        ...bin,
+        fillLevel: newLevel
+    };
+
+    const res = await axios.put(`${baseUrl}/${bin.id}`, updatedBin);
+
+    const index = this.bins.findIndex(b => b.id === bin.id);
+    this.bins[index] = res.data;
+
+    // 🔥 kun refresh bins (ikke notifikationer her)
+    await this.getNotifications();
+},
         getFillText(level) {
             if (level < 30) return "Lav";
             if (level < 70) return "Halvfuld";
@@ -160,6 +178,9 @@ Vue.createApp({
         this.getAllBins();
         this.getLocations();
         this.getNotifications();
+         setInterval(() => {
+        this.getNotifications();
+    }, 3000);
     }
 
 }).mount("#app");
