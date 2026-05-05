@@ -62,6 +62,25 @@ Vue.createApp({
 
             this.showForm = false;
         },
+        async emptyBin(bin) {
+    const updatedBin = {
+        ...bin,
+        fillLevel: 0
+    };
+
+    const res = await axios.put(`${baseUrl}/${bin.id}`, updatedBin);
+
+    const index = this.bins.findIndex(b => b.id === bin.id);
+    this.bins[index] = res.data;
+},
+
+formatDate(date) {
+    if (!date) {
+        return "Ikke registreret";
+    }
+
+    return new Date(date).toLocaleString("da-DK");
+},
 
         async saveEdit(id) {
             const res = await axios.put(`${baseUrl}/${id}`, this.editBin);
@@ -136,6 +155,7 @@ async increaseFill(bin) {
         ...bin,
         fillLevel: newLevel
     };
+    
 
     const res = await axios.put(`${baseUrl}/${bin.id}`, updatedBin);
 
