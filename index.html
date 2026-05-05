@@ -23,13 +23,12 @@
             box-shadow: 0 6px 18px rgba(0,0,0,0.1);
         }
 
-        /* ✅ LØSNING 1 */
         .bin-card {
             position: relative;
             display: flex;
             flex-direction: column;
             height: 100%;
-            min-height: 180px;
+            min-height: 200px;
         }
 
         .top-row {
@@ -91,7 +90,6 @@
 
                 <div class="mb-3">
                     <div v-for="loc in locations" class="d-flex gap-2 mb-2">
-
                         <input v-model="loc.name" class="form-control form-control-sm">
 
                         <select v-model="loc.isIndoor" class="form-select form-select-sm" style="max-width:120px;">
@@ -99,14 +97,8 @@
                             <option :value="false">Udendørs</option>
                         </select>
 
-                        <button @click="updateLocation(loc)" class="btn btn-sm btn-success">
-                            Gem
-                        </button>
-
-                        <button @click="deleteLocation(loc.id)" class="btn btn-sm btn-danger">
-                            Slet
-                        </button>
-
+                        <button @click="updateLocation(loc)" class="btn btn-sm btn-success">Gem</button>
+                        <button @click="deleteLocation(loc.id)" class="btn btn-sm btn-danger">Slet</button>
                     </div>
                 </div>
 
@@ -114,40 +106,41 @@
                     <button @click="addBin" class="btn btn-primary w-100">Gem</button>
                     <button @click="toggleForm" class="btn btn-outline-secondary w-100">Annuller</button>
                 </div>
-
             </div>
 
             <!-- GRID -->
             <div class="row g-4">
 
-                <div v-for="bin in bins" :key="bin.id"
-                     class="col-md-7 col-lg-5">
+                <div v-for="bin in bins" :key="bin.id" class="col-md-7 col-lg-5">
 
                     <div class="card bin-card p-3 shadow-sm">
 
+                        <!-- MENU -->
+                        <div class="dropdown position-absolute top-0 end-0 m-2">
+                            <button class="btn btn-light btn-sm border-0" data-bs-toggle="dropdown">⋮</button>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><button class="dropdown-item" @click="startEdit(bin)">Rediger</button></li>
+                                <li><button class="dropdown-item text-danger" @click="deleteBin(bin)">Slet</button></li>
+                            </ul>
+                        </div>
+
                         <!-- TOP -->
                         <div class="d-flex justify-content-between top-row">
-
                             <div>
                                 <h6 class="fw-bold mb-1">{{ bin.name }}</h6>
-                                <small class="text-muted">
-                                    {{ translateWaste(bin.wasteType) }}
-                                </small>
+                                <small class="text-muted">{{ translateWaste(bin.wasteType) }}</small>
                             </div>
 
                             <div class="text-end">
-                                <small class="text-muted d-block">
-                                    {{ getLocationName(bin.locationId) }}
-                                </small>
-
+                                <small class="text-muted d-block">{{ getLocationName(bin.locationId) }}</small>
                                 <span class="fw-bold" :class="getTextColor(bin.fillLevel)">
                                     {{ bin.fillLevel }}%
                                 </span>
                             </div>
-
                         </div>
 
-                        <!-- BUND (LØSNING 1) -->
+                        <!-- BOTTOM -->
                         <div class="mt-auto">
 
                             <div class="progress mt-3 mb-2" style="height:6px;">
@@ -161,6 +154,34 @@
                                 {{ getFillText(bin.fillLevel) }}
                             </small>
 
+                            <!-- 🔥 TEST BUTTON -->
+                            <button @click="increaseFill(bin)"
+                                    class="btn btn-outline-secondary btn-sm mt-2 w-100">
+                                +10%
+                            </button>
+                        </div>
+
+                        <!-- EDIT -->
+                        <div v-if="editId === bin.id" class="mt-3">
+                            <input v-model="editBin.name" class="form-control mb-2">
+
+                            <select v-model="editBin.wasteType" class="form-select mb-2">
+                                <option value="General">Restaffald</option>
+                                <option value="Paper">Papir</option>
+                                <option value="Organic">Madaffald</option>
+                                <option value="Metal">Metal</option>
+                            </select>
+
+                            <select v-model="editBin.locationId" class="form-select mb-2">
+                                <option v-for="loc in locations" :value="loc.id">
+                                    {{ loc.name }}
+                                </option>
+                            </select>
+
+                            <div class="d-flex gap-2">
+                                <button @click="saveEdit(bin.id)" class="btn btn-success btn-sm w-100">Gem</button>
+                                <button @click="cancelEdit" class="btn btn-secondary btn-sm w-100">Annuller</button>
+                            </div>
                         </div>
 
                     </div>
@@ -204,7 +225,19 @@
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script src="index.js"></script>
+
+<script>
+/* 🔥 LIVE UPDATE */
+setInterval(() => {
+    const app = Vue.getApp ? Vue.getApp() : null;
+    if (app && app._instance && app._instance.proxy) {
+        app._instance.proxy.getNotifications();
+    }
+}, 3000);
+</script>
 
 </body>
 </html>
