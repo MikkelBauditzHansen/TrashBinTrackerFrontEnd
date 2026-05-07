@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="da">
+
 <head>
     <meta charset="UTF-8">
     <title>Smartbin Dashboard</title>
@@ -20,7 +21,7 @@
 
         .card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
         }
 
         .bin-card {
@@ -48,192 +49,200 @@
 
 <body>
 
-<div id="app" class="container py-5">
+    <div id="app" class="container py-5">
 
-    <div class="row">
+        <div class="row">
 
-        <!-- LEFT SIDE -->
-        <div class="col-md-8">
+            <!-- LEFT SIDE -->
+            <div class="col-md-8">
 
-            <h3 class="fw-bold mb-4">Skraldespande</h3>
+                <div class="d-flex justify-content-between align-items-center mb-4">
 
-            <div v-if="!loggedIn" class="mb-4">
-                <input v-model="auth.username" placeholder="Username" type="text" class="form-control mb-2">
-                <input v-model="auth.password" placeholder="Password" type="password" class="form-control mb-2">
-                <button @click="login" class="btn btn-primary">Login</button>
-                <p v-if="authMessage" class="mt-2 text-danger">{{ authMessage }}</p>
-            </div>
+                    <h3 class="fw-bold m-0">
+                        Skraldespande
+                    </h3>
 
-            <div v-else>
-                <button v-if="role === 'Admin'" @click="toggleForm" class="btn btn-success mb-4">
+                    <div>
+                        <span class="me-3">
+                            Welcome {{ username }}
+                        </span>
+
+                        <button @click="logout" class="btn btn-danger btn-sm">
+                            Logout
+                        </button>
+                    </div>
+
+                </div>
+
+                <button @click="toggleForm" class="btn btn-success mb-4">
                     + Opret skraldespand
                 </button>
 
                 <!-- FORM -->
                 <div v-if="showForm" class="card p-4 mb-4 shadow-sm">
 
-                <h5 class="mb-3">Ny skraldespand</h5>
+                    <h5 class="mb-3">Ny skraldespand</h5>
 
-                <input v-model="newBin.name" class="form-control mb-2" placeholder="Navn">
+                    <input v-model="newBin.name" class="form-control mb-2" placeholder="Navn">
 
-                <select v-model="newBin.wasteType" class="form-select mb-2">
-                    <option disabled value="">Vælg affaldstype</option>
-                    <option value="General">Restaffald</option>
-                    <option value="Paper">Papir</option>
-                    <option value="Organic">Madaffald</option>
-                    <option value="Metal">Metal</option>
-                </select>
+                    <select v-model="newBin.wasteType" class="form-select mb-2">
+                        <option disabled value="">Vælg affaldstype</option>
+                        <option value="General">Restaffald</option>
+                        <option value="Paper">Papir</option>
+                        <option value="Organic">Madaffald</option>
+                        <option value="Metal">Metal</option>
+                    </select>
 
-                <select v-model="newBin.locationId" class="form-select mb-2">
-                    <option disabled value="">Vælg lokation</option>
-                    <option v-for="loc in locations" :value="loc.id">
-                        {{ loc.name }} ({{ loc.isIndoor ? 'Indendørs' : 'Udendørs' }})
-                    </option>
-                </select>
+                    <select v-model="newBin.locationId" class="form-select mb-2">
+                        <option disabled value="">Vælg lokation</option>
+                        <option v-for="loc in locations" :value="loc.id">
+                            {{ loc.name }} ({{ loc.isIndoor ? 'Indendørs' : 'Udendørs' }})
+                        </option>
+                    </select>
 
-                <div class="d-flex gap-2 mb-3">
-                    <input v-model="newLocation" class="form-control" placeholder="Ny lokation">
-                    <button @click="addLocation" class="btn btn-outline-primary">+</button>
-                </div>
+                    <div class="d-flex gap-2 mb-3">
+                        <input v-model="newLocation" class="form-control" placeholder="Ny lokation">
+                        <button @click="addLocation" class="btn btn-outline-primary">+</button>
+                    </div>
 
-                <div class="mb-3">
-                    <div v-for="loc in locations" class="d-flex gap-2 mb-2">
-                        <input v-model="loc.name" class="form-control form-control-sm">
+                    <div class="mb-3">
+                        <div v-for="loc in locations" class="d-flex gap-2 mb-2">
+                            <input v-model="loc.name" class="form-control form-control-sm">
 
-                        <select v-model="loc.isIndoor" class="form-select form-select-sm" style="max-width:120px;">
-                            <option :value="true">Indendørs</option>
-                            <option :value="false">Udendørs</option>
-                        </select>
+                            <select v-model="loc.isIndoor" class="form-select form-select-sm" style="max-width:120px;">
+                                <option :value="true">Indendørs</option>
+                                <option :value="false">Udendørs</option>
+                            </select>
 
-                        <button @click="updateLocation(loc)" class="btn btn-sm btn-success">Gem</button>
-                        <button @click="deleteLocation(loc.id)" class="btn btn-sm btn-danger">Slet</button>
+                            <button @click="updateLocation(loc)" class="btn btn-sm btn-success">Gem</button>
+                            <button @click="deleteLocation(loc.id)" class="btn btn-sm btn-danger">Slet</button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button @click="addBin" class="btn btn-primary w-100">Gem</button>
+                        <button @click="toggleForm" class="btn btn-outline-secondary w-100">Annuller</button>
                     </div>
                 </div>
 
-                <div class="d-flex gap-2">
-                    <button @click="addBin" class="btn btn-primary w-100">Gem</button>
-                    <button @click="toggleForm" class="btn btn-outline-secondary w-100">Annuller</button>
-                </div>
-            </div>
+                <!-- GRID -->
+                <div class="row g-4">
 
-            <!-- GRID -->
-            <div class="row g-4">
+                    <div v-for="bin in bins" :key="bin.id" class="col-md-7 col-lg-5">
 
-                <div v-for="bin in bins" :key="bin.id" class="col-md-7 col-lg-5">
+                        <div class="card bin-card p-3 shadow-sm">
 
-                    <div class="card bin-card p-3 shadow-sm">
+                            <!-- MENU -->
+                            <div class="dropdown position-absolute top-0 end-0 m-2">
+                                <button class="btn btn-light btn-sm border-0" data-bs-toggle="dropdown">⋮</button>
 
-                        <!-- MENU -->
-                        <div class="dropdown position-absolute top-0 end-0 m-2">
-                            <button class="btn btn-light btn-sm border-0" data-bs-toggle="dropdown">⋮</button>
-
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><button class="dropdown-item" @click="startEdit(bin)">Rediger</button></li>
-                                <li><button class="dropdown-item text-danger" @click="deleteBin(bin)">Slet</button></li>
-                            </ul>
-                        </div>
-
-                        <!-- TOP -->
-                        <div class="d-flex justify-content-between top-row">
-                            <div>
-                                <h6 class="fw-bold mb-1">{{ bin.name }}</h6>
-                                <small class="text-muted">{{ translateWaste(bin.wasteType) }}</small>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><button class="dropdown-item" @click="startEdit(bin)">Rediger</button></li>
+                                    <li><button class="dropdown-item text-danger" @click="deleteBin(bin)">Slet</button>
+                                    </li>
+                                </ul>
                             </div>
 
-                            <div class="text-end">
-                                <small class="text-muted d-block">{{ getLocationName(bin.locationId) }}</small>
-                                <span class="fw-bold" :class="getTextColor(bin.fillLevel)">
-                                    {{ bin.fillLevel }}%
-                                </span>
-                            </div>
-                        </div>
+                            <!-- TOP -->
+                            <div class="d-flex justify-content-between top-row">
+                                <div>
+                                    <h6 class="fw-bold mb-1">{{ bin.name }}</h6>
+                                    <small class="text-muted">{{ translateWaste(bin.wasteType) }}</small>
+                                </div>
 
-                        <!-- BOTTOM -->
-                        <div class="mt-auto">
-
-                            <div class="progress mt-3 mb-2" style="height:6px;">
-                                <div class="progress-bar"
-                                     :class="getBarColor(bin.fillLevel)"
-                                     :style="{ width: bin.fillLevel + '%' }">
+                                <div class="text-end">
+                                    <small class="text-muted d-block">{{ getLocationName(bin.locationId) }}</small>
+                                    <span class="fw-bold" :class="getTextColor(bin.fillLevel)">
+                                        {{ bin.fillLevel }}%
+                                    </span>
                                 </div>
                             </div>
-                            <div class="mt-2">
-                            <small class="text-muted d-block">
-                              Sidst tømt:
-                            </small>
 
-                            <span class="fw-semibold">
-                                {{ formatDate(bin.lastEmptied) }}
-                            </span>
-                        </div>
+                            <!-- BOTTOM -->
+                            <div class="mt-auto">
 
-                        <button @click="emptyBin(bin)" class="btn btn-outline-success btn-sm mt-2 w-100">
-                            Marker som tømt
-                        </button>
-                            <small class="text-muted">
-                                {{ getFillText(bin.fillLevel) }}
-                            </small>
+                                <div class="progress mt-3 mb-2" style="height:6px;">
+                                    <div class="progress-bar" :class="getBarColor(bin.fillLevel)"
+                                        :style="{ width: bin.fillLevel + '%' }">
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted d-block">
+                                        Sidst tømt:
+                                    </small>
 
-                            <!-- 🔥 TEST BUTTON -->
-                            <button @click="increaseFill(bin)"
-                                    class="btn btn-outline-secondary btn-sm mt-2 w-100">
-                                +10%
-                            </button>
-                        </div>
+                                    <span class="fw-semibold">
+                                        {{ formatDate(bin.lastEmptied) }}
+                                    </span>
+                                </div>
 
-                        <!-- EDIT -->
-                        <div v-if="editId === bin.id" class="mt-3">
-                            <input v-model="editBin.name" class="form-control mb-2">
+                                <button @click="emptyBin(bin)" class="btn btn-outline-success btn-sm mt-2 w-100">
+                                    Marker som tømt
+                                </button>
+                                <small class="text-muted">
+                                    {{ getFillText(bin.fillLevel) }}
+                                </small>
 
-                            <select v-model="editBin.wasteType" class="form-select mb-2">
-                                <option value="General">Restaffald</option>
-                                <option value="Paper">Papir</option>
-                                <option value="Organic">Madaffald</option>
-                                <option value="Metal">Metal</option>
-                            </select>
-
-                            <select v-model="editBin.locationId" class="form-select mb-2">
-                                <option v-for="loc in locations" :value="loc.id">
-                                    {{ loc.name }}
-                                </option>
-                            </select>
-
-                            <div class="d-flex gap-2">
-                                <button @click="saveEdit(bin.id)" class="btn btn-success btn-sm w-100">Gem</button>
-                                <button @click="cancelEdit" class="btn btn-secondary btn-sm w-100">Annuller</button>
+                                <!-- TEST BUTTON -->
+                                <button @click="increaseFill(bin)" class="btn btn-outline-secondary btn-sm mt-2 w-100">
+                                    +10%
+                                </button>
                             </div>
-                        </div>
 
+                            <!-- EDIT -->
+                            <div v-if="editId == bin.id" class="mt-3">
+                                <input v-model="editBin.name" class="form-control mb-2">
+
+                                <select v-model="editBin.wasteType" class="form-select mb-2">
+                                    <option value="General">Restaffald</option>
+                                    <option value="Paper">Papir</option>
+                                    <option value="Organic">Madaffald</option>
+                                    <option value="Metal">Metal</option>
+                                </select>
+
+                                <select v-model="editBin.locationId" class="form-select mb-2">
+                                    <option v-for="loc in locations" :value="loc.id">
+                                        {{ loc.name }}
+                                    </option>
+                                </select>
+
+                                <div class="d-flex gap-2">
+                                    <button @click="saveEdit(bin.id)" class="btn btn-success btn-sm w-100">Gem</button>
+                                    <button @click="cancelEdit" class="btn btn-secondary btn-sm w-100">Annuller</button>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
+
                 </div>
 
             </div>
 
-        </div>
+            <!-- RIGHT SIDE -->
+            <div class="col-md-4">
 
-        <!-- RIGHT SIDE -->
-        <div class="col-md-4">
+                <div class="card p-3 shadow-sm sidebar-card">
 
-            <div class="card p-3 shadow-sm sidebar-card">
+                    <h5 class="fw-bold mb-3">Notifikationer</h5>
 
-                <h5 class="fw-bold mb-3">Notifikationer</h5>
+                    <div v-for="n in latestNotifications" :key="n.notificationId" class="border rounded p-2 mb-2">
 
-                <div v-for="n in latestNotifications" :key="n.notificationId"
-                     class="border rounded p-2 mb-2">
+                        <div class="fw-semibold">
+                            {{ n.notificationMessage }}
+                        </div>
 
-                    <div class="fw-semibold">
-                        {{ n.notificationMessage }}
+                        <small class="text-muted">
+                            {{ n.trashLevel }}%
+                        </small>
+
                     </div>
 
-                    <small class="text-muted">
-                        {{ n.trashLevel }}%
-                    </small>
+                    <a href="notifications.html" class="btn btn-outline-primary btn-sm mt-2">
+                        Se alle
+                    </a>
 
                 </div>
-
-                <a href="notifications.html" class="btn btn-outline-primary btn-sm mt-2">
-                    Se alle
-                </a>
 
             </div>
 
@@ -241,23 +250,22 @@
 
     </div>
 
-</div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="index.js"></script>
 
-<script src="index.js"></script>
-
-<script>
-/* 🔥 LIVE UPDATE */
-setInterval(() => {
-    const app = Vue.getApp ? Vue.getApp() : null;
-    if (app && app._instance && app._instance.proxy) {
-        app._instance.proxy.getNotifications();
-    }
-}, 3000);
-</script>
+    <script>
+        /* LIVE UPDATE */
+        setInterval(() => {
+            const app = Vue.getApp ? Vue.getApp() : null;
+            if (app && app._instance && app._instance.proxy) {
+                app._instance.proxy.getNotifications();
+            }
+        }, 3000);
+    </script>
 
 </body>
+
 </html>

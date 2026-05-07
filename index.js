@@ -10,15 +10,6 @@ Vue.createApp({
             notifications: [],
             newLocation: "",
             showForm: false,
-            auth: {
-                username: "",
-                password: ""
-            },
-            authMessage: "",
-            jwtToken: "",
-            role: null,
-            loggedIn: false,
-            message: "",
 
             newBin: {
                 name: "",
@@ -35,17 +26,12 @@ Vue.createApp({
                 fillLevel: 0
             },
 
-            authurl: "https://localhost:7159/api/auth/login",
-           
-
-
-
-
-
-
+            jwtToken: localStorage.getItem("token"),
+            role: localStorage.getItem("role"),
+            username: localStorage.getItem("username"),
         };
     },
-    
+
     computed: {
         latestNotifications() {
             return this.notifications
@@ -56,38 +42,13 @@ Vue.createApp({
     },
 
     methods: {
-
-        login() {
-            axios.post(this.authurl, this.auth)
-                .then(response => {
-                    this.jwtToken = response.data.token;
-                    this.role = response.data.role;
-                    this.loggedIn = true;
-                    this.authMessage = "Authentication successful";
-                    this.getAllBins();
-                    this.getLocations();
-                    this.getNotifications();
-                }).catch(ex => {
-                    this.authMessage = "Authentication failed - " + ex.message;
-                });
-        },
         authConfig() {
-            const config = {};
-            if (this.jwtToken) {
-                config.headers = {
+
+            return {
+                headers: {
                     Authorization: `Bearer ${this.jwtToken}`
-                };
-            }
-            return config;
-        },
-        logout() {
-            this.jwtToken = null;
-            this.role = null;
-            this.loggedIn = false;
-            this.auth = { username: "", password: "" };
-            this.bins = [];
-            this.message = null;
-            this.authMessage = "Logged out successfully";
+                }
+            };
         },
 
         toggleForm() {
@@ -133,29 +94,78 @@ Vue.createApp({
             return new Date(date).toLocaleString("da-DK");
         },
 
-        async saveEdit(id) {
-            const res = await axios.put(`${baseUrl}/${id}`, this.editBin, this.authConfig());
-
-            const index = this.bins.findIndex(b => b.id === id);
-            this.bins[index] = res.data;
-
-            this.editId = null;
-        },
-
-        async deleteBin(bin) {
-            if (!confirm("Slet?")) return;
-
-            await axios.delete(`${baseUrl}/${bin.id}`, this.authConfig());
-            this.bins = this.bins.filter(b => b.id !== bin.id);
-        },
-
         startEdit(bin) {
+
             this.editId = bin.id;
-            this.editBin = { ...bin };
+
+            this.editBin = {
+                id: bin.id,
+                name: bin.name,
+                wasteType: bin.wasteType,
+                locationId: bin.locationId,
+                fillLevel: bin.fillLevel
+            };
         },
 
         cancelEdit() {
+
             this.editId = null;
+        },
+        async saveEdit(id) {
+
+            try {
+
+                const updatedBin = {
+                    id: id,
+                    name: this.editBin.name,
+                    wasteType: this.editBin.wasteType,
+                    locationId: this.editBin.locationId,
+                    fillLevel: this.editBin.fillLevel
+                };
+
+                const res = await axios.put(
+                    `${baseUrl}/${id}`,
+                    updatedBin,
+                    this.authConfig()
+                );
+
+                const index = this.bins.findIndex(
+                    b => b.id === id
+                );
+
+                this.bins[index] = res.data;
+
+                this.editId = null;
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                alert("Error updating trash bin");
+            }
+        }, async deleteBin(bin) {
+
+            if (!confirm("Slet?")) return;
+
+            try {
+
+                await axios.delete(
+                    `${baseUrl}/${bin.id}`,
+                    this.authConfig()
+                );
+
+                this.bins = this.bins.filter(b => b.id !== bin.id);
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                alert("Error deleting trash bin");
+            }
         },
 
         // ---------------- LOCATIONS ----------------
@@ -186,6 +196,15 @@ Vue.createApp({
             this.locations = this.locations.filter(l => l.id !== id);
         },
 
+        logout() {
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            localStorage.removeItem("username");
+
+            window.location.href = "login.html";
+        },
+
         // ---------------- NOTIFICATIONS ----------------
         async getNotifications() {
             const res = await axios.get(notificationUrl, this.authConfig());
@@ -213,7 +232,7 @@ Vue.createApp({
             const index = this.bins.findIndex(b => b.id === bin.id);
             this.bins[index] = res.data;
 
-            // 🔥 kun refresh bins (ikke notifikationer her)
+            //  kun refresh bins (ikke notifikationer her)
             await this.getNotifications();
         },
         getFillText(level) {
@@ -246,11 +265,21 @@ Vue.createApp({
     },
 
     mounted() {
+
+        if (!this.jwtToken) {
+
+            window.location.href = "login.html";
+            return;
+        }
+
         this.getAllBins();
         this.getLocations();
         this.getNotifications();
+
         setInterval(() => {
+
             this.getNotifications();
+
         }, 3000);
     }
 
