@@ -25,7 +25,6 @@ Vue.createApp({
                 locationId: "",
                 fillLevel: 0
             },
-
             jwtToken: localStorage.getItem("token"),
             role: localStorage.getItem("role"),
             username: localStorage.getItem("username"),
@@ -42,6 +41,11 @@ Vue.createApp({
     },
 
     methods: {
+       logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    window.location.href = "login.html";
+},
         authConfig() {
 
             return {
@@ -75,102 +79,50 @@ Vue.createApp({
             this.showForm = false;
         },
         async emptyBin(bin) {
-            const updatedBin = {
-                ...bin,
-                fillLevel: 0
-            };
+    const res = await axios.put(`${baseUrl}/${bin.id}/empty`, null, this.authConfig());
 
-            const res = await axios.put(`${baseUrl}/${bin.id}`, updatedBin, this.authConfig());
+    const index = this.bins.findIndex(b => b.id === bin.id);
+    if (index !== -1) {
+        this.bins[index] = res.data;
+    }
+},
 
-            const index = this.bins.findIndex(b => b.id === bin.id);
+formatDate(date) {
+    if (!date) {
+        return "Ikke registreret";
+    }
+
+    return new Date(date).toLocaleString("da-DK");
+},
+
+        async saveEdit(id) {
+            const res = await axios.put(`${baseUrl}/${id}`, this.editBin, this.authConfig());
+
+            const index = this.bins.findIndex(b => b.id === id);
             this.bins[index] = res.data;
-        },
-
-        formatDate(date) {
-            if (!date) {
-                return "Ikke registreret";
-            }
-
-            return new Date(date).toLocaleString("da-DK");
-        },
-
-        startEdit(bin) {
-
-            this.editId = bin.id;
-
-            this.editBin = {
-                id: bin.id,
-                name: bin.name,
-                wasteType: bin.wasteType,
-                locationId: bin.locationId,
-                fillLevel: bin.fillLevel
-            };
-        },
-
-        cancelEdit() {
 
             this.editId = null;
         },
-        async saveEdit(id) {
 
-            try {
-
-                const updatedBin = {
-                    id: id,
-                    name: this.editBin.name,
-                    wasteType: this.editBin.wasteType,
-                    locationId: this.editBin.locationId,
-                    fillLevel: this.editBin.fillLevel
-                };
-
-                const res = await axios.put(
-                    `${baseUrl}/${id}`,
-                    updatedBin,
-                    this.authConfig()
-                );
-
-                const index = this.bins.findIndex(
-                    b => b.id === id
-                );
-
-                this.bins[index] = res.data;
-
-                this.editId = null;
-
-            }
-
-            catch (error) {
-
-                console.error(error);
-
-                alert("Error updating trash bin");
-            }
-        }, async deleteBin(bin) {
-
+        async deleteBin(bin) {
             if (!confirm("Slet?")) return;
 
-            try {
+            await axios.delete(`${baseUrl}/${bin.id}`, this.authConfig());
+            this.bins = this.bins.filter(b => b.id !== bin.id);
+        },
 
-                await axios.delete(
-                    `${baseUrl}/${bin.id}`,
-                    this.authConfig()
-                );
+        startEdit(bin) {
+            this.editId = bin.id;
+            this.editBin = { ...bin };
+        },
 
-                this.bins = this.bins.filter(b => b.id !== bin.id);
-
-            }
-
-            catch (error) {
-
-                console.error(error);
-
-                alert("Error deleting trash bin");
-            }
+        cancelEdit() {
+            this.editId = null;
         },
 
         // ---------------- LOCATIONS ----------------
         async getLocations() {
-            const res = await axios.get(locationUrl, this.authConfig());
+            const res = await axios.get(locationUrl);
             this.locations = res.data;
         },
 
@@ -180,7 +132,7 @@ Vue.createApp({
             const res = await axios.post(locationUrl, {
                 name: this.newLocation,
                 isIndoor: false
-            }, this.authConfig());
+            });
 
             this.locations.push(res.data);
             this.newBin.locationId = res.data.id;
@@ -196,45 +148,43 @@ Vue.createApp({
             this.locations = this.locations.filter(l => l.id !== id);
         },
 
-        logout() {
-
-            localStorage.removeItem("token");
-            localStorage.removeItem("role");
-            localStorage.removeItem("username");
-
-            window.location.href = "login.html";
-        },
-
         // ---------------- NOTIFICATIONS ----------------
         async getNotifications() {
             const res = await axios.get(notificationUrl, this.authConfig());
             this.notifications = res.data;
         },
-
+        
 
         getLocationName(id) {
             const loc = this.locations.find(l => l.id === id);
             return loc ? loc.name : "Ukendt";
         },
-        async increaseFill(bin) {
+async increaseFill(bin) {
 
-            let newLevel = bin.fillLevel + 10;
-            if (newLevel > 100) newLevel = 100;
+    let newLevel = bin.fillLevel + 10;
+    if (newLevel > 100) newLevel = 100;
 
-            const updatedBin = {
-                ...bin,
-                fillLevel: newLevel
-            };
+    const updatedBin = {
+        ...bin,
+        fillLevel: newLevel
+    };
+    
 
+    const res = await axios.put(`${baseUrl}/${bin.id}`, updatedBin, this.authConfig());
 
-            const res = await axios.put(`${baseUrl}/${bin.id}`, updatedBin, this.authConfig());
+    const index = this.bins.findIndex(b => b.id === bin.id);
+    this.bins[index] = res.data;
 
-            const index = this.bins.findIndex(b => b.id === bin.id);
-            this.bins[index] = res.data;
-
-            //  kun refresh bins (ikke notifikationer her)
-            await this.getNotifications();
-        },
+    // 🔥 kun refresh bins (ikke notifikationer her)
+    await this.getNotifications();
+},
+async markAsRead(id) {
+    await axios.delete(`${notificationUrl}/${id}`, this.authConfig());
+    this.notifications = this.notifications.filter(n => n.notificationId !== id);
+},
+goToDetails(binId) {
+    window.location.href = `History.html?binId=${binId}`;
+},
         getFillText(level) {
             if (level < 30) return "Lav";
             if (level < 70) return "Halvfuld";
@@ -254,7 +204,7 @@ Vue.createApp({
         },
 
         translateWaste(type) {
-            switch (type) {
+            switch(type) {
                 case "General": return "Restaffald";
                 case "Paper": return "Papir";
                 case "Organic": return "Madaffald";
@@ -265,22 +215,12 @@ Vue.createApp({
     },
 
     mounted() {
-
-        if (!this.jwtToken) {
-
-            window.location.href = "login.html";
-            return;
-        }
-
         this.getAllBins();
         this.getLocations();
         this.getNotifications();
-
-        setInterval(() => {
-
-            this.getNotifications();
-
-        }, 3000);
+         setInterval(() => {
+        this.getNotifications();
+    }, 3000);
     }
 
 }).mount("#app");
