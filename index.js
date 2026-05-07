@@ -1,6 +1,7 @@
 const baseUrl = "https://localhost:7159/api/TrashBinTracker";
 const locationUrl = "https://localhost:7159/api/Location";
 const notificationUrl = "https://localhost:7159/api/Notification";
+const weatherUrl = "https://localhost:7159/api/weather";
 
 Vue.createApp({
     data() {
@@ -8,6 +9,7 @@ Vue.createApp({
             bins: [],
             locations: [],
             notifications: [],
+            weather: null,
             newLocation: "",
             showForm: false,
 
@@ -19,15 +21,17 @@ Vue.createApp({
             },
 
             editId: null,
+
             editBin: {
                 name: "",
                 wasteType: "",
                 locationId: "",
                 fillLevel: 0
             },
+
             jwtToken: localStorage.getItem("token"),
             role: localStorage.getItem("role"),
-            username: localStorage.getItem("username"),
+            username: localStorage.getItem("username")
         };
     },
 
@@ -41,13 +45,14 @@ Vue.createApp({
     },
 
     methods: {
-       logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    window.location.href = "login.html";
-},
-        authConfig() {
+        logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("username");
+            localStorage.removeItem("role");
+            window.location.href = "login.html";
+        },
 
+        authConfig() {
             return {
                 headers: {
                     Authorization: `Bearer ${this.jwtToken}`
@@ -59,7 +64,21 @@ Vue.createApp({
             this.showForm = !this.showForm;
         },
 
+        // ---------------- WEATHER ----------------
+
+        async getWeather() {
+            const latitude = 55.6761;
+            const longitude = 12.5683;
+
+            const res = await axios.get(
+                `${weatherUrl}?latitude=${latitude}&longitude=${longitude}`
+            );
+
+            this.weather = res.data;
+        },
+
         // ---------------- BINS ----------------
+
         async getAllBins() {
             const res = await axios.get(baseUrl, this.authConfig());
             this.bins = res.data;
@@ -67,6 +86,7 @@ Vue.createApp({
 
         async addBin() {
             const res = await axios.post(baseUrl, this.newBin, this.authConfig());
+
             this.bins.push(res.data);
 
             this.newBin = {
@@ -78,36 +98,42 @@ Vue.createApp({
 
             this.showForm = false;
         },
+
         async emptyBin(bin) {
-    const res = await axios.put(`${baseUrl}/${bin.id}/empty`, null, this.authConfig());
+            const res = await axios.put(
+                `${baseUrl}/${bin.id}/empty`,
+                null,
+                this.authConfig()
+            );
 
-    const index = this.bins.findIndex(b => b.id === bin.id);
-    if (index !== -1) {
-        this.bins[index] = res.data;
-    }
-},
+            const index = this.bins.findIndex(b => b.id === bin.id);
 
-formatDate(date) {
-    if (!date) {
-        return "Ikke registreret";
-    }
-
-    return new Date(date).toLocaleString("da-DK");
-},
+            if (index !== -1) {
+                this.bins[index] = res.data;
+            }
+        },
 
         async saveEdit(id) {
-            const res = await axios.put(`${baseUrl}/${id}`, this.editBin, this.authConfig());
+            const res = await axios.put(
+                `${baseUrl}/${id}`,
+                this.editBin,
+                this.authConfig()
+            );
 
             const index = this.bins.findIndex(b => b.id === id);
+
             this.bins[index] = res.data;
 
             this.editId = null;
         },
 
         async deleteBin(bin) {
-            if (!confirm("Slet?")) return;
+            if (!confirm("Slet?")) {
+                return;
+            }
 
             await axios.delete(`${baseUrl}/${bin.id}`, this.authConfig());
+
             this.bins = this.bins.filter(b => b.id !== bin.id);
         },
 
@@ -121,18 +147,25 @@ formatDate(date) {
         },
 
         // ---------------- LOCATIONS ----------------
+
         async getLocations() {
             const res = await axios.get(locationUrl);
             this.locations = res.data;
         },
 
         async addLocation() {
-            if (!this.newLocation) return;
+            if (!this.newLocation) {
+                return;
+            }
 
-            const res = await axios.post(locationUrl, {
-                name: this.newLocation,
-                isIndoor: false
-            });
+            const res = await axios.post(
+                locationUrl,
+                {
+                    name: this.newLocation,
+                    isIndoor: false
+                },
+                this.authConfig()
+            );
 
             this.locations.push(res.data);
             this.newBin.locationId = res.data.id;
@@ -140,76 +173,130 @@ formatDate(date) {
         },
 
         async updateLocation(loc) {
-            await axios.put(`${locationUrl}/${loc.id}`, loc, this.authConfig());
+            await axios.put(
+                `${locationUrl}/${loc.id}`,
+                loc,
+                this.authConfig()
+            );
         },
 
         async deleteLocation(id) {
             await axios.delete(`${locationUrl}/${id}`, this.authConfig());
+
             this.locations = this.locations.filter(l => l.id !== id);
         },
 
         // ---------------- NOTIFICATIONS ----------------
+
         async getNotifications() {
             const res = await axios.get(notificationUrl, this.authConfig());
             this.notifications = res.data;
         },
-        
+
+        async markAsRead(id) {
+            await axios.delete(`${notificationUrl}/${id}`, this.authConfig());
+
+            this.notifications = this.notifications.filter(
+                n => n.notificationId !== id
+            );
+        },
+
+        // ---------------- HELPERS ----------------
 
         getLocationName(id) {
             const loc = this.locations.find(l => l.id === id);
             return loc ? loc.name : "Ukendt";
         },
-async increaseFill(bin) {
 
-    let newLevel = bin.fillLevel + 10;
-    if (newLevel > 100) newLevel = 100;
+        async increaseFill(bin) {
+            let newLevel = bin.fillLevel + 10;
 
-    const updatedBin = {
-        ...bin,
-        fillLevel: newLevel
-    };
-    
+            if (newLevel > 100) {
+                newLevel = 100;
+            }
 
-    const res = await axios.put(`${baseUrl}/${bin.id}`, updatedBin, this.authConfig());
+            const updatedBin = {
+                ...bin,
+                fillLevel: newLevel
+            };
 
-    const index = this.bins.findIndex(b => b.id === bin.id);
-    this.bins[index] = res.data;
+            const res = await axios.put(
+                `${baseUrl}/${bin.id}`,
+                updatedBin,
+                this.authConfig()
+            );
 
-    // 🔥 kun refresh bins (ikke notifikationer her)
-    await this.getNotifications();
-},
-async markAsRead(id) {
-    await axios.delete(`${notificationUrl}/${id}`, this.authConfig());
-    this.notifications = this.notifications.filter(n => n.notificationId !== id);
-},
-goToDetails(binId) {
-    window.location.href = `History.html?binId=${binId}`;
-},
+            const index = this.bins.findIndex(b => b.id === bin.id);
+
+            this.bins[index] = res.data;
+
+            await this.getNotifications();
+        },
+
+        goToDetails(binId) {
+            window.location.href = `History.html?binId=${binId}`;
+        },
+
+        formatDate(date) {
+            if (!date) {
+                return "Ikke registreret";
+            }
+
+            return new Date(date).toLocaleString("da-DK");
+        },
+
         getFillText(level) {
-            if (level < 30) return "Lav";
-            if (level < 70) return "Halvfuld";
+            if (level < 30) {
+                return "Lav";
+            }
+
+            if (level < 70) {
+                return "Halvfuld";
+            }
+
             return "Fuld";
         },
 
         getBarColor(level) {
-            if (level < 30) return "bg-success";
-            if (level < 70) return "bg-warning";
+            if (level < 30) {
+                return "bg-success";
+            }
+
+            if (level < 70) {
+                return "bg-warning";
+            }
+
             return "bg-danger";
         },
 
         getTextColor(level) {
-            if (level < 30) return "text-success";
-            if (level < 70) return "text-warning";
+            if (level < 30) {
+                return "text-success";
+            }
+
+            if (level < 70) {
+                return "text-warning";
+            }
+
             return "text-danger";
         },
 
         translateWaste(type) {
-            switch(type) {
-                case "General": return "Restaffald";
-                case "Paper": return "Papir";
-                case "Organic": return "Madaffald";
-                case "Metal": return "Metal";
-                default: return type;
+            switch (type) {
+                case "General":
+                    return "Restaffald";
+
+                case "Paper":
+                    return "Papir";
+
+                case "Organic":
+                    return "Madaffald";
+
+                case "Metal":
+                    return "Metal";
+
+                default:
+                    return type;
             }
         }
     },
@@ -218,9 +305,15 @@ goToDetails(binId) {
         this.getAllBins();
         this.getLocations();
         this.getNotifications();
-         setInterval(() => {
-        this.getNotifications();
-    }, 3000);
+        this.getWeather();
+
+        setInterval(() => {
+            this.getNotifications();
+        }, 3000);
+
+        setInterval(() => {
+            this.getWeather();
+        }, 60000);
     }
 
 }).mount("#app");
