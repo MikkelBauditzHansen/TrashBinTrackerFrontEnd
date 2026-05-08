@@ -2,230 +2,758 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <title>Smartbin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trash Bin Tracker</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
-        body {
-            background-color: #f8f9fa;
+        * {
+            box-sizing: border-box;
         }
+
+        body {
+            margin: 0;
+            background: #f5f7f9;
+            font-family: "Segoe UI", sans-serif;
+            color: #1f2937;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+
+            width: 250px;
+            height: 100vh;
+
+            background: white;
+            border-right: 1px solid #eaeaea;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            padding: 24px;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .menu {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 14px 16px;
+
+            border-radius: 14px;
+
+            text-decoration: none;
+            color: #64748b;
+
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .menu-item.active {
+            background: #e8f8ec;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .user-box {
+            border-top: 1px solid #ececec;
+            padding-top: 20px;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+
+            border-radius: 50%;
+
+            background: #22c55e;
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-weight: bold;
+        }
+
+        .small-avatar {
+            width: 36px;
+            height: 36px;
+            font-size: 14px;
+        }
+
+        /* MAIN */
+
+        #app {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        /* TOPBAR */
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 30px;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .subtext {
+            color: #6b7280;
+        }
+
+        /* CARDS */
 
         .card {
             border: none;
-            border-radius: 16px;
+            border-radius: 22px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             transition: 0.2s;
-            height: 100%;
         }
 
         .card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
         }
 
         .bin-card {
             position: relative;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            min-height: 200px;
-        }
-
-        .top-row {
-            padding-right: 40px;
+            min-height: 250px;
+            padding: 24px;
         }
 
         .progress {
-            background-color: #e9ecef;
+            height: 8px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 500;
         }
 
         .sidebar-card {
             position: sticky;
             top: 20px;
         }
+
+        .notification-item {
+            border: 1px solid #ececec;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .weather-card {
+            background: #eef5ff;
+        }
+
+        .tip-card {
+            background: #effcf2;
+            border: 1px solid #d7f5df;
+        }
+
+        .dropdown-toggle::after {
+            display: none;
+        }
+
+        .icon-btn {
+            border: none;
+            background: transparent;
+            font-size: 20px;
+            color: #6b7280;
+        }
+
+        .status-text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .top-icons {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .weather-box {
+            font-weight: 600;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .details-btn {
+            border-radius: 10px;
+        }
     </style>
 </head>
 
 <body>
 
-<div id="app" class="container py-5">
+<!-- SIDEBAR -->
 
-    <div class="row">
+<div class="sidebar">
 
-        <!-- LEFT SIDE -->
-        <div class="col-md-8">
+    <div>
 
-            <h3 class="fw-bold mb-4">Skraldespande</h3>
+        <div class="logo">
+            🗑️ Trash Bin<br>
+            Tracker
+        </div>
 
-            <button @click="toggleForm" class="btn btn-success mb-4">
-                + Opret skraldespand
-            </button>
+        <div class="menu">
 
-            <!-- FORM -->
-            <div v-if="showForm" class="card p-4 mb-4 shadow-sm">
+            <a href="index.html" class="menu-item active">
+                🏠 Dashboard
+            </a>
 
-                <h5 class="mb-3">Ny skraldespand</h5>
+            <a href="index.html" class="menu-item">
+                🗑️ Mine skraldespande
+            </a>
 
-                <input v-model="newBin.name" class="form-control mb-2" placeholder="Navn">
+            <a href="history.html" class="menu-item">
+                📊 Historik
+            </a>
 
-                <select v-model="newBin.wasteType" class="form-select mb-2">
-                    <option disabled value="">Vælg affaldstype</option>
-                    <option value="General">Restaffald</option>
-                    <option value="Paper">Papir</option>
-                    <option value="Organic">Madaffald</option>
-                    <option value="Metal">Metal</option>
-                </select>
+            <a href="notifications.html" class="menu-item">
+                🔔 Notifikationer
+            </a>
 
-                <select v-model="newBin.locationId" class="form-select mb-2">
-                    <option disabled value="">Vælg lokation</option>
-                    <option v-for="loc in locations" :value="loc.id">
-                        {{ loc.name }} ({{ loc.isIndoor ? 'Indendørs' : 'Udendørs' }})
-                    </option>
-                </select>
+            <a href="#" class="menu-item">
+                ⚙️ Indstillinger
+            </a>
 
-                <div class="d-flex gap-2 mb-3">
-                    <input v-model="newLocation" class="form-control" placeholder="Ny lokation">
-                    <button @click="addLocation" class="btn btn-outline-primary">+</button>
-                </div>
+            <a href="#" class="menu-item">
+                ❓ Hjælp
+            </a>
 
-                <div class="mb-3">
-                    <div v-for="loc in locations" class="d-flex gap-2 mb-2">
-                        <input v-model="loc.name" class="form-control form-control-sm">
+        </div>
 
-                        <select v-model="loc.isIndoor" class="form-select form-select-sm" style="max-width:120px;">
-                            <option :value="true">Indendørs</option>
-                            <option :value="false">Udendørs</option>
-                        </select>
+    </div>
 
-                        <button @click="updateLocation(loc)" class="btn btn-sm btn-success">Gem</button>
-                        <button @click="deleteLocation(loc.id)" class="btn btn-sm btn-danger">Slet</button>
-                    </div>
-                </div>
+    <!-- USER -->
 
-                <div class="d-flex gap-2">
-                    <button @click="addBin" class="btn btn-primary w-100">Gem</button>
-                    <button @click="toggleForm" class="btn btn-outline-secondary w-100">Annuller</button>
-                </div>
+    <div class="user-box">
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+
+            <div class="avatar">
+                {{ username ? username.charAt(0).toUpperCase() : 'U' }}
             </div>
 
-            <!-- GRID -->
-            <div class="row g-4">
-
-                <div v-for="bin in bins" :key="bin.id" class="col-md-7 col-lg-5">
-
-                    <div class="card bin-card p-3 shadow-sm">
-
-                        <!-- MENU -->
-                        <div class="dropdown position-absolute top-0 end-0 m-2">
-                            <button class="btn btn-light btn-sm border-0" data-bs-toggle="dropdown">⋮</button>
-
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><button class="dropdown-item" @click="startEdit(bin)">Rediger</button></li>
-                                <li><button class="dropdown-item text-danger" @click="deleteBin(bin)">Slet</button></li>
-                            </ul>
-                        </div>
-
-                        <!-- TOP -->
-                        <div class="d-flex justify-content-between top-row">
-                            <div>
-                                <h6 class="fw-bold mb-1">{{ bin.name }}</h6>
-                                <small class="text-muted">{{ translateWaste(bin.wasteType) }}</small>
-                            </div>
-
-                            <div class="text-end">
-                                <small class="text-muted d-block">{{ getLocationName(bin.locationId) }}</small>
-                                <span class="fw-bold" :class="getTextColor(bin.fillLevel)">
-                                    {{ bin.fillLevel }}%
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- BOTTOM -->
-                        <div class="mt-auto">
-
-                            <div class="progress mt-3 mb-2" style="height:6px;">
-                                <div class="progress-bar"
-                                     :class="getBarColor(bin.fillLevel)"
-                                     :style="{ width: bin.fillLevel + '%' }">
-                                </div>
-                            </div>
-                            <div class="mt-2">
-                            <small class="text-muted d-block">
-                              Sidst tømt:
-                            </small>
-
-                            <span class="fw-semibold">
-                                {{ formatDate(bin.lastEmptied) }}
-                            </span>
-                        </div>
-
-                        <button @click="emptyBin(bin)" class="btn btn-outline-success btn-sm mt-2 w-100">
-                            Marker som tømt
-                        </button>
-                            <small class="text-muted">
-                                {{ getFillText(bin.fillLevel) }}
-                            </small>
-
-                            <!-- 🔥 TEST BUTTON -->
-                            <button @click="increaseFill(bin)"
-                                    class="btn btn-outline-secondary btn-sm mt-2 w-100">
-                                +10%
-                            </button>
-                        </div>
-
-                        <!-- EDIT -->
-                        <div v-if="editId === bin.id" class="mt-3">
-                            <input v-model="editBin.name" class="form-control mb-2">
-
-                            <select v-model="editBin.wasteType" class="form-select mb-2">
-                                <option value="General">Restaffald</option>
-                                <option value="Paper">Papir</option>
-                                <option value="Organic">Madaffald</option>
-                                <option value="Metal">Metal</option>
-                            </select>
-
-                            <select v-model="editBin.locationId" class="form-select mb-2">
-                                <option v-for="loc in locations" :value="loc.id">
-                                    {{ loc.name }}
-                                </option>
-                            </select>
-
-                            <div class="d-flex gap-2">
-                                <button @click="saveEdit(bin.id)" class="btn btn-success btn-sm w-100">Gem</button>
-                                <button @click="cancelEdit" class="btn btn-secondary btn-sm w-100">Annuller</button>
-                            </div>
-                        </div>
-
-                    </div>
+            <div>
+                <div class="fw-bold">
+                    {{ username }}
                 </div>
+
+                <small class="text-muted">
+                    Logget ind
+                </small>
+            </div>
+
+        </div>
+
+        <button @click="logout" class="btn btn-light border w-100">
+            Log ud
+        </button>
+
+    </div>
+
+</div>
+
+<!-- APP -->
+
+<div id="app">
+
+    <!-- TOPBAR -->
+
+    <div class="topbar">
+
+        <div>
+
+            <div class="welcome-title">
+                Velkommen tilbage, {{ username }} 👋
+            </div>
+
+            <div class="subtext">
+                Her er status på dine skraldespande
+            </div>
+
+        </div>
+
+        <div class="top-icons">
+
+            <div class="weather-box">
+                ☀️ 22°C
+            </div>
+
+            
+<a href="notifications.html"
+                   >
+
+                    🔔
+
+                </a>
+            <div class="d-flex align-items-center gap-2">
+
+                <div class="avatar small-avatar">
+                    {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+                </div>
+
+                <span>
+                    Hej, {{ username }}
+                </span>
 
             </div>
 
         </div>
 
-        <!-- RIGHT SIDE -->
-        <div class="col-md-4">
+    </div>
 
-            <div class="card p-3 shadow-sm sidebar-card">
+    <!-- CREATE BUTTON -->
 
-                <h5 class="fw-bold mb-3">Notifikationer</h5>
+    <button @click="toggleForm" class="btn btn-success px-4 py-2 mb-4">
+        + Opret skraldespand
+    </button>
 
-                <div v-for="n in latestNotifications" :key="n.notificationId"
-                     class="border rounded p-2 mb-2">
+    <!-- FORM -->
 
-                    <div class="fw-semibold">
-                        {{ n.notificationMessage }}
+    <div v-if="showForm" class="card p-4 mb-4">
+
+        <h5 class="fw-bold mb-3">
+            Ny skraldespand
+        </h5>
+
+        <input v-model="newBin.name"
+               class="form-control mb-3"
+               placeholder="Navn">
+
+        <select v-model="newBin.wasteType"
+                class="form-select mb-3">
+
+            <option disabled value="">
+                Vælg affaldstype
+            </option>
+
+            <option value="General">
+                Restaffald
+            </option>
+
+            <option value="Paper">
+                Papir
+            </option>
+
+            <option value="Organic">
+                Madaffald
+            </option>
+
+            <option value="Metal">
+                Metal
+            </option>
+
+        </select>
+
+        <select v-model="newBin.locationId"
+                class="form-select mb-3">
+
+            <option disabled value="">
+                Vælg lokation
+            </option>
+
+            <option v-for="loc in locations"
+                    :value="loc.id">
+
+                {{ loc.name }}
+                ({{ loc.isIndoor ? 'Indendørs' : 'Udendørs' }})
+
+            </option>
+
+        </select>
+
+        <div class="d-flex gap-2 mb-3">
+
+            <input v-model="newLocation"
+                   class="form-control"
+                   placeholder="Ny lokation">
+
+            <button @click="addLocation"
+                    class="btn btn-outline-primary">
+                +
+            </button>
+
+        </div>
+
+        <!-- LOCATION EDIT -->
+
+        <div class="mb-3">
+
+            <div v-for="loc in locations"
+                 class="d-flex gap-2 mb-2">
+
+                <input v-model="loc.name"
+                       class="form-control form-control-sm">
+
+                <select v-model="loc.isIndoor"
+                        class="form-select form-select-sm"
+                        style="max-width: 140px;">
+
+                    <option :value="true">
+                        Indendørs
+                    </option>
+
+                    <option :value="false">
+                        Udendørs
+                    </option>
+
+                </select>
+
+                <button @click="updateLocation(loc)"
+                        class="btn btn-success btn-sm">
+                    Gem
+                </button>
+
+                <button @click="deleteLocation(loc.id)"
+                        class="btn btn-danger btn-sm">
+                    Slet
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <button @click="addBin"
+                    class="btn btn-success w-100">
+                Gem
+            </button>
+
+            <button @click="toggleForm"
+                    class="btn btn-outline-secondary w-100">
+                Annuller
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- CONTENT -->
+
+    <div class="row g-4">
+
+        <!-- LEFT -->
+
+        <div class="col-lg-8">
+
+            <div class="row g-4">
+
+                <!-- BIN CARD -->
+
+                <div v-for="bin in bins"
+                     :key="bin.id"
+                     class="col-md-6">
+
+                    <div class="card bin-card">
+
+                        <!-- MENU -->
+
+                        <div class="dropdown position-absolute top-0 end-0 m-3">
+
+                            <button class="icon-btn"
+                                    data-bs-toggle="dropdown">
+                                ⋮
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+
+                                <li>
+                                    <button class="dropdown-item"
+                                            @click="startEdit(bin)">
+                                        Rediger
+                                    </button>
+                                </li>
+
+                                <li>
+                                    <button class="dropdown-item text-danger"
+                                            @click="deleteBin(bin)">
+                                        Slet
+                                    </button>
+                                </li>
+
+                            </ul>
+
+                        </div>
+
+                        <!-- TOP -->
+
+                        <div class="d-flex justify-content-between">
+
+                            <div>
+
+                                <h5 class="fw-bold mb-1">
+                                    {{ bin.name }}
+                                </h5>
+
+                                <small class="text-muted">
+                                    {{ translateWaste(bin.wasteType) }}
+                                </small>
+
+                            </div>
+
+                            <div class="text-end">
+
+                                <h2 class="fw-bold"
+                                    :class="getTextColor(bin.fillLevel)">
+
+                                    {{ bin.fillLevel }}%
+
+                                </h2>
+
+                                <div class="status-text"
+                                     :class="getTextColor(bin.fillLevel)">
+
+                                    {{ getFillText(bin.fillLevel) }}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- PROGRESS -->
+
+                        <div class="progress my-4">
+
+                            <div class="progress-bar"
+                                 :class="getBarColor(bin.fillLevel)"
+                                 :style="{ width: bin.fillLevel + '%' }">
+                            </div>
+
+                        </div>
+
+                        <!-- BOTTOM -->
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                            <div>
+
+                                <small class="text-muted d-block">
+                                    Sidst tømt
+                                </small>
+
+                                <strong>
+                                    {{ formatDate(bin.lastEmptied) }}
+                                </strong>
+
+                            </div>
+
+                            <button class="btn btn-outline-secondary btn-sm details-btn"
+                                    @click="goToDetails(bin.id)">
+
+                                Se detaljer
+
+                            </button>
+
+                        </div>
+
+                        <!-- ACTIONS -->
+
+                        <button @click="emptyBin(bin)"
+                                class="btn btn-outline-success btn-sm w-100 mb-2">
+
+                            Marker som tømt
+
+                        </button>
+
+                        <button @click="increaseFill(bin)"
+                                class="btn btn-outline-secondary btn-sm w-100">
+
+                            +10%
+
+                        </button>
+
+                        <!-- EDIT -->
+
+                        <div v-if="editId === bin.id"
+                             class="mt-4">
+
+                            <input v-model="editBin.name"
+                                   class="form-control mb-2">
+
+                            <select v-model="editBin.wasteType"
+                                    class="form-select mb-2">
+
+                                <option value="General">
+                                    Restaffald
+                                </option>
+
+                                <option value="Paper">
+                                    Papir
+                                </option>
+
+                                <option value="Organic">
+                                    Madaffald
+                                </option>
+
+                                <option value="Metal">
+                                    Metal
+                                </option>
+
+                            </select>
+
+                            <select v-model="editBin.locationId"
+                                    class="form-select mb-2">
+
+                                <option v-for="loc in locations"
+                                        :value="loc.id">
+
+                                    {{ loc.name }}
+
+                                </option>
+
+                            </select>
+
+                            <div class="d-flex gap-2">
+
+                                <button @click="saveEdit(bin.id)"
+                                        class="btn btn-success btn-sm w-100">
+
+                                    Gem
+
+                                </button>
+
+                                <button @click="cancelEdit"
+                                        class="btn btn-secondary btn-sm w-100">
+
+                                    Annuller
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
                     </div>
-
-                    <small class="text-muted">
-                        {{ n.trashLevel }}%
-                    </small>
 
                 </div>
 
-                <a href="notifications.html" class="btn btn-outline-primary btn-sm mt-2">
-                    Se alle
+            </div>
+
+            <!-- TIP -->
+
+            <div class="card tip-card p-4 mt-4">
+
+                🌱 Tip: Ved at sortere dit affald korrekt hjælper du miljøet.
+                Tak fordi du gør en forskel 💚
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+
+        <div class="col-lg-4">
+
+            <!-- NOTIFICATIONS -->
+
+            <div class="card p-4 sidebar-card mb-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+
+                    <h5 class="fw-bold mb-0">
+                        Notifikationer
+                    </h5>
+
+                    <span class="badge bg-danger">
+                        {{ notifications.length }}
+                    </span>
+
+                </div>
+
+                <div v-for="n in latestNotifications"
+                     :key="n.notificationId"
+                     class="notification-item">
+
+                    <div class="fw-semibold mb-1">
+                        ⚠️ {{ n.notificationMessage }}
+                    </div>
+
+                    <small class="text-muted d-block mb-2">
+                        {{ n.trashLevel }}%
+                    </small>
+
+                    <button class="btn btn-outline-danger btn-sm w-100"
+                            @click="markAsRead(n.notificationId)">
+
+                        Læst
+
+                    </button>
+
+                </div>
+
+                <a href="notifications.html"
+                   class="btn btn-outline-success w-100 mt-2">
+
+                    Se alle notifikationer
+
                 </a>
+
+            </div>
+
+            <!-- WEATHER -->
+
+            <div class="card weather-card p-4">
+
+                <h5 class="fw-bold mb-3">
+                    Vejr
+                </h5>
+
+                <h2 class="mb-1">
+                    ☀️ 22°C
+                </h2>
+
+                <div class="text-muted">
+                    Let skyet
+                </div>
+
+                <small class="text-muted">
+                    Risiko for regn i aften ☔
+                </small>
 
             </div>
 
@@ -240,16 +768,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script src="index.js"></script>
-
-<script>
-/* 🔥 LIVE UPDATE */
-setInterval(() => {
-    const app = Vue.getApp ? Vue.getApp() : null;
-    if (app && app._instance && app._instance.proxy) {
-        app._instance.proxy.getNotifications();
-    }
-}, 3000);
-</script>
 
 </body>
 </html>
