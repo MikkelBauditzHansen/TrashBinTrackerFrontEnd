@@ -170,6 +170,7 @@
         }
 
         .weather-card {
+        
             background: #eef5ff;
         }
 
@@ -323,9 +324,7 @@
                 Henter vejr...
             </div>
 
-            <a href="notifications.html">
-                🔔
-            </a>
+            
 
             <div class="d-flex align-items-center gap-2">
 
@@ -655,6 +654,12 @@
                         {{ warning.fillLevel }}% fuld
 
                     </small>
+                    <button class="btn btn-outline-danger btn-sm w-100"
+            @click="markTempAsRead(warning.binId)">
+
+        Læst
+
+    </button>
 
                 </div>
 
@@ -678,12 +683,11 @@
                     </button>
 
                 </div>
-
-            </div>
-
-            <!-- WEATHER -->
-
-            <div class="card weather-card p-4"
+                <a href="notifications.html" class="btn btn-outline-success w-100 mt-2">
+                    Se alle
+                </a>
+ <!-- WEATHER -->
+            <div class="card weather-card p-4 mt-4"
                  v-if="weather">
 
                 <h5 class="fw-bold mb-3">
@@ -744,6 +748,9 @@
 
             </div>
 
+            </div>
+
+           
         </div>
 
     </div>
