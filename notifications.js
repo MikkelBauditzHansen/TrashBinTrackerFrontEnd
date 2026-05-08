@@ -1,30 +1,89 @@
 const notificationUrl = "https://localhost:7159/api/Notification";
 
 Vue.createApp({
+
     data() {
+
         return {
-            notifications: []
+
+            notifications: [],
+
+            temperatureWarnings: JSON.parse(
+                localStorage.getItem("temperatureWarnings")
+            ) || []
         };
     },
 
     methods: {
 
         async getNotifications() {
-            const res = await axios.get(notificationUrl);
-            this.notifications = res.data;
+
+            try {
+
+                const res = await axios.get(
+                    notificationUrl
+                );
+
+                this.notifications = res.data;
+
+            } catch (error) {
+
+                console.log(error);
+            }
         },
 
         async markAsRead(id) {
-            await axios.delete(`${notificationUrl}/${id}`);
 
-            // fjern lokalt uden refresh
-            this.notifications = this.notifications.filter(n => n.notificationId !== id);
+            try {
+
+                await axios.delete(
+                    `${notificationUrl}/${id}`
+                );
+
+                this.notifications =
+                    this.notifications.filter(
+
+                        n => n.notificationId !== id
+                    );
+
+            } catch (error) {
+
+                console.log(error);
+            }
+        },
+
+        removeTemperatureWarning(binId) {
+
+            this.temperatureWarnings =
+                this.temperatureWarnings.filter(
+
+                    w => w.binId !== binId
+                );
+
+            localStorage.setItem(
+
+                "temperatureWarnings",
+
+                JSON.stringify(
+                    this.temperatureWarnings
+                )
+            );
         }
-
     },
 
     mounted() {
+
         this.getNotifications();
+
+        setInterval(() => {
+
+            this.getNotifications();
+
+            this.temperatureWarnings = JSON.parse(
+                localStorage.getItem("temperatureWarnings")
+            ) || [];
+
+        }, 3000);
     }
 
 }).mount("#app");
