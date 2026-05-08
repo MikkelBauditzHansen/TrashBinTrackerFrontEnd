@@ -23,13 +23,17 @@
             position: fixed;
             top: 0;
             left: 0;
+
             width: 250px;
             height: 100vh;
+
             background: white;
             border-right: 1px solid #eaeaea;
+
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+
             padding: 24px;
             z-index: 1000;
         }
@@ -51,10 +55,14 @@
             display: flex;
             align-items: center;
             gap: 12px;
+
             padding: 14px 16px;
+
             border-radius: 14px;
+
             text-decoration: none;
             color: #64748b;
+
             font-weight: 500;
             transition: 0.2s;
         }
@@ -78,12 +86,16 @@
         .avatar {
             width: 42px;
             height: 42px;
+
             border-radius: 50%;
+
             background: #22c55e;
             color: white;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             font-weight: bold;
         }
 
@@ -102,6 +114,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+
             margin-bottom: 30px;
         }
 
@@ -165,6 +178,19 @@
             border: 1px solid #d7f5df;
         }
 
+        .temperature-warning-card {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+        }
+
+        .temperature-warning-item {
+            background: white;
+            border: 1px solid #fecdd3;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
         .icon-btn {
             border: none;
             background: transparent;
@@ -197,31 +223,57 @@
 
 <div id="app">
 
+    <!-- SIDEBAR -->
+
     <div class="sidebar">
 
         <div>
+
             <div class="logo">
                 🗑️ Trash Bin<br>
                 Tracker
             </div>
 
             <div class="menu">
-                <a href="index.html" class="menu-item active">🏠 Dashboard</a>
-                <a href="index.html" class="menu-item">🗑️ Mine skraldespande</a>
-                <a href="history.html" class="menu-item">📊 Historik</a>
-                <a href="notifications.html" class="menu-item">🔔 Notifikationer</a>
-                <a href="#" class="menu-item">⚙️ Indstillinger</a>
-                <a href="#" class="menu-item">❓ Hjælp</a>
+
+                <a href="index.html" class="menu-item active">
+                    🏠 Dashboard
+                </a>
+
+                <a href="index.html" class="menu-item">
+                    🗑️ Mine skraldespande
+                </a>
+
+                <a href="history.html" class="menu-item">
+                    📊 Historik
+                </a>
+
+                <a href="notifications.html" class="menu-item">
+                    🔔 Notifikationer
+                </a>
+
+                <a href="#" class="menu-item">
+                    ⚙️ Indstillinger
+                </a>
+
+                <a href="#" class="menu-item">
+                    ❓ Hjælp
+                </a>
+
             </div>
+
         </div>
 
         <div class="user-box">
+
             <div class="d-flex align-items-center gap-3 mb-3">
+
                 <div class="avatar">
                     {{ username ? username.charAt(0).toUpperCase() : 'U' }}
                 </div>
 
                 <div>
+
                     <div class="fw-bold">
                         {{ username }}
                     </div>
@@ -229,19 +281,28 @@
                     <small class="text-muted">
                         Logget ind
                     </small>
+
                 </div>
+
             </div>
 
-            <button @click="logout" class="btn btn-light border w-100">
+            <button @click="logout"
+                    class="btn btn-light border w-100">
+
                 Log ud
+
             </button>
+
         </div>
 
     </div>
 
+    <!-- MAIN -->
+
     <div class="topbar">
 
         <div>
+
             <div class="welcome-title">
                 Velkommen tilbage, {{ username }} 👋
             </div>
@@ -249,6 +310,7 @@
             <div class="subtext">
                 Her er status på dine skraldespande
             </div>
+
         </div>
 
         <div class="top-icons">
@@ -261,9 +323,12 @@
                 Henter vejr...
             </div>
 
-            <a href="notifications.html">🔔</a>
+            <a href="notifications.html">
+                🔔
+            </a>
 
             <div class="d-flex align-items-center gap-2">
+
                 <div class="avatar small-avatar">
                     {{ username ? username.charAt(0).toUpperCase() : 'U' }}
                 </div>
@@ -271,17 +336,26 @@
                 <span>
                     Hej, {{ username }}
                 </span>
+
             </div>
 
         </div>
 
     </div>
 
-    <button @click="toggleForm" class="btn btn-success px-4 py-2 mb-4">
+    <!-- CREATE BUTTON -->
+
+    <button @click="toggleForm"
+            class="btn btn-success px-4 py-2 mb-4">
+
         + Opret skraldespand
+
     </button>
 
-    <div v-if="showForm" class="card p-4 mb-4">
+    <!-- FORM -->
+
+    <div v-if="showForm"
+         class="card p-4 mb-4">
 
         <h5 class="fw-bold mb-3">
             Ny skraldespand
@@ -298,10 +372,21 @@
                 Vælg affaldstype
             </option>
 
-            <option value="General">Restaffald</option>
-            <option value="Paper">Papir</option>
-            <option value="Organic">Madaffald</option>
-            <option value="Metal">Metal</option>
+            <option value="General">
+                Restaffald
+            </option>
+
+            <option value="Paper">
+                Papir
+            </option>
+
+            <option value="Organic">
+                Madaffald
+            </option>
+
+            <option value="Metal">
+                Metal
+            </option>
 
         </select>
 
@@ -322,67 +407,64 @@
 
         </select>
 
-        <div class="d-flex gap-2 mb-3">
-
-            <input v-model="newLocation"
-                   class="form-control"
-                   placeholder="Ny lokation">
-
-            <button @click="addLocation"
-                    class="btn btn-outline-primary">
-                +
-            </button>
-
-        </div>
-
-        <div class="mb-3">
-
-            <div v-for="loc in locations"
-                 class="d-flex gap-2 mb-2">
-
-                <input v-model="loc.name"
-                       class="form-control form-control-sm">
-
-                <select v-model="loc.isIndoor"
-                        class="form-select form-select-sm"
-                        style="max-width: 140px;">
-
-                    <option :value="true">Indendørs</option>
-                    <option :value="false">Udendørs</option>
-
-                </select>
-
-                <button @click="updateLocation(loc)"
-                        class="btn btn-success btn-sm">
-                    Gem
-                </button>
-
-                <button @click="deleteLocation(loc.id)"
-                        class="btn btn-danger btn-sm">
-                    Slet
-                </button>
-
-            </div>
-
-        </div>
-
         <div class="d-flex gap-2">
 
             <button @click="addBin"
                     class="btn btn-success w-100">
+
                 Gem
+
             </button>
 
             <button @click="toggleForm"
                     class="btn btn-outline-secondary w-100">
+
                 Annuller
+
             </button>
 
         </div>
 
     </div>
 
+    <!-- TEMPERATURE WARNINGS -->
+
+    <div v-if="temperatureWarnings.length > 0"
+         class="card temperature-warning-card p-4 mb-4">
+
+        <h5 class="fw-bold text-danger mb-3">
+            ⚠️ Temperatur-advarsel
+        </h5>
+
+        <div v-for="warning in temperatureWarnings"
+             :key="warning.binId"
+             class="temperature-warning-item">
+
+            <div class="fw-bold text-danger mb-1">
+                {{ warning.binName }} bør tømmes
+            </div>
+
+            <div>
+                Madaffaldsspanden er
+                {{ warning.fillLevel }}% fuld,
+                og temperaturen er
+                {{ warning.temperature }}°C
+            </div>
+
+            <small class="text-muted">
+                Lokation:
+                {{ warning.locationName }}
+            </small>
+
+        </div>
+
+    </div>
+
+    <!-- CONTENT -->
+
     <div class="row g-4">
+
+        <!-- LEFT -->
 
         <div class="col-lg-8">
 
@@ -392,29 +474,40 @@
                      :key="bin.id"
                      class="col-md-6">
 
-                    <div class="card bin-card">
+                    <div class="card bin-card"
+                         :class="{ 'border border-danger': isTemperatureWarningBin(bin.id) }">
 
                         <div class="dropdown position-absolute top-0 end-0 m-3">
 
                             <button class="icon-btn"
                                     data-bs-toggle="dropdown">
+
                                 ⋮
+
                             </button>
 
                             <ul class="dropdown-menu dropdown-menu-end">
 
                                 <li>
+
                                     <button class="dropdown-item"
                                             @click="startEdit(bin)">
+
                                         Rediger
+
                                     </button>
+
                                 </li>
 
                                 <li>
+
                                     <button class="dropdown-item text-danger"
                                             @click="deleteBin(bin)">
+
                                         Slet
+
                                     </button>
+
                                 </li>
 
                             </ul>
@@ -424,6 +517,7 @@
                         <div class="d-flex justify-content-between">
 
                             <div>
+
                                 <h5 class="fw-bold mb-1">
                                     {{ bin.name }}
                                 </h5>
@@ -431,18 +525,30 @@
                                 <small class="text-muted">
                                     {{ translateWaste(bin.wasteType) }}
                                 </small>
+
+                                <div v-if="isTemperatureWarningBin(bin.id)"
+                                     class="text-danger fw-bold mt-2">
+
+                                    ⚠️ Risiko for lugt
+
+                                </div>
+
                             </div>
 
                             <div class="text-end">
 
                                 <h2 class="fw-bold"
                                     :class="getTextColor(bin.fillLevel)">
+
                                     {{ bin.fillLevel }}%
+
                                 </h2>
 
                                 <div class="status-text"
                                      :class="getTextColor(bin.fillLevel)">
+
                                     {{ getFillText(bin.fillLevel) }}
+
                                 </div>
 
                             </div>
@@ -461,6 +567,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
 
                             <div>
+
                                 <small class="text-muted d-block">
                                     Sidst tømt
                                 </small>
@@ -468,66 +575,31 @@
                                 <strong>
                                     {{ formatDate(bin.lastEmptied) }}
                                 </strong>
+
                             </div>
 
                             <button class="btn btn-outline-secondary btn-sm details-btn"
                                     @click="goToDetails(bin.id)">
+
                                 Se detaljer
+
                             </button>
 
                         </div>
 
                         <button @click="emptyBin(bin)"
                                 class="btn btn-outline-success btn-sm w-100 mb-2">
+
                             Marker som tømt
+
                         </button>
 
                         <button @click="increaseFill(bin)"
                                 class="btn btn-outline-secondary btn-sm w-100">
+
                             +10%
+
                         </button>
-
-                        <div v-if="editId === bin.id"
-                             class="mt-4">
-
-                            <input v-model="editBin.name"
-                                   class="form-control mb-2">
-
-                            <select v-model="editBin.wasteType"
-                                    class="form-select mb-2">
-
-                                <option value="General">Restaffald</option>
-                                <option value="Paper">Papir</option>
-                                <option value="Organic">Madaffald</option>
-                                <option value="Metal">Metal</option>
-
-                            </select>
-
-                            <select v-model="editBin.locationId"
-                                    class="form-select mb-2">
-
-                                <option v-for="loc in locations"
-                                        :value="loc.id">
-                                    {{ loc.name }}
-                                </option>
-
-                            </select>
-
-                            <div class="d-flex gap-2">
-
-                                <button @click="saveEdit(bin.id)"
-                                        class="btn btn-success btn-sm w-100">
-                                    Gem
-                                </button>
-
-                                <button @click="cancelEdit"
-                                        class="btn btn-secondary btn-sm w-100">
-                                    Annuller
-                                </button>
-
-                            </div>
-
-                        </div>
 
                     </div>
 
@@ -535,14 +607,22 @@
 
             </div>
 
+            <!-- TIP -->
+
             <div class="card tip-card p-4 mt-4">
+
                 🌱 Tip: Ved at sortere dit affald korrekt hjælper du miljøet.
                 Tak fordi du gør en forskel 💚
+
             </div>
 
         </div>
 
+        <!-- RIGHT -->
+
         <div class="col-lg-4">
+
+            <!-- NOTIFICATIONS -->
 
             <div class="card p-4 sidebar-card mb-4">
 
@@ -553,8 +633,28 @@
                     </h5>
 
                     <span class="badge bg-danger">
-                        {{ notifications.length }}
+                        {{ notifications.length + temperatureWarnings.length }}
                     </span>
+
+                </div>
+
+                <div v-for="warning in temperatureWarnings"
+                     :key="'temp-' + warning.binId"
+                     class="notification-item">
+
+                    <div class="fw-semibold mb-1 text-danger">
+
+                        🌡️ {{ warning.binName }}
+                        kan begynde at lugte
+
+                    </div>
+
+                    <small class="text-muted d-block mb-2">
+
+                        {{ warning.temperature }}°C ·
+                        {{ warning.fillLevel }}% fuld
+
+                    </small>
 
                 </div>
 
@@ -572,19 +672,19 @@
 
                     <button class="btn btn-outline-danger btn-sm w-100"
                             @click="markAsRead(n.notificationId)">
+
                         Læst
+
                     </button>
 
                 </div>
 
-                <a href="notifications.html"
-                   class="btn btn-outline-success w-100 mt-2">
-                    Se alle notifikationer
-                </a>
-
             </div>
 
-            <div class="card weather-card p-4" v-if="weather">
+            <!-- WEATHER -->
+
+            <div class="card weather-card p-4"
+                 v-if="weather">
 
                 <h5 class="fw-bold mb-3">
                     Vejr
@@ -595,31 +695,51 @@
                 </h2>
 
                 <div class="text-muted">
-                    Nedbør: {{ weather.precipitation }} mm
+                    Nedbør:
+                    {{ weather.precipitation }} mm
                 </div>
 
                 <small class="text-muted d-block">
-                    Regn: {{ weather.rain }} mm
+                    Regn:
+                    {{ weather.rain }} mm
                 </small>
 
                 <small class="text-muted d-block">
-                    Byger: {{ weather.showers }} mm
+                    Byger:
+                    {{ weather.showers }} mm
                 </small>
 
-                <small class="text-muted d-block">
-                    Sne: {{ weather.snowfall }} mm
+                <small class="text-muted d-block mb-3">
+                    Sne:
+                    {{ weather.snowfall }} mm
                 </small>
 
-            </div>
+                <!-- TEST WEATHER -->
 
-            <div class="card weather-card p-4" v-else>
+                <label class="form-label fw-semibold">
+                    Test temperatur
+                </label>
 
-                <h5 class="fw-bold mb-3">
-                    Vejr
-                </h5>
+                <div class="d-flex gap-2">
 
-                <div class="text-muted">
-                    Henter vejrdata...
+                    <input type="number"
+                           class="form-control"
+                           v-model="testTemperature">
+
+                    <button @click="setTestWeather"
+                            class="btn btn-warning">
+
+                        Test
+
+                    </button>
+
+                    <button @click="resetWeather"
+                            class="btn btn-outline-secondary">
+
+                        Reset
+
+                    </button>
+
                 </div>
 
             </div>
