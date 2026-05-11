@@ -405,6 +405,58 @@
             </option>
 
         </select>
+        <div class="d-flex gap-2 mb-3">
+
+    <input v-model="newLocation"
+           class="form-control"
+           placeholder="Ny lokation">
+
+    <button @click="addLocation"
+            class="btn btn-outline-primary">
+        +
+    </button>
+
+</div>
+<div class="mb-3">
+
+    <div v-for="loc in locations"
+         :key="loc.id"
+         class="d-flex gap-2 mb-2">
+
+        <input v-model="loc.name"
+               class="form-control form-control-sm">
+
+        <select v-model="loc.isIndoor"
+                class="form-select form-select-sm"
+                style="max-width: 140px;">
+
+            <option :value="true">
+                Indendørs
+            </option>
+
+            <option :value="false">
+                Udendørs
+            </option>
+
+        </select>
+
+        <button @click="updateLocation(loc)"
+                class="btn btn-success btn-sm">
+
+            Gem
+
+        </button>
+
+        <button @click="deleteLocation(loc.id)"
+                class="btn btn-danger btn-sm">
+
+            Slet
+
+        </button>
+
+    </div>
+
+</div>
 
         <div class="d-flex gap-2">
 
@@ -495,6 +547,7 @@
                                         Rediger
 
                                     </button>
+                                    
 
                                 </li>
 
@@ -512,7 +565,38 @@
                             </ul>
 
                         </div>
+                            <!-- Redigeringsformular -->
+<div v-if="editId === bin.id" class="mb-3">
+    <input v-model="editBin.name"
+           class="form-control mb-2"
+           placeholder="Navn">
 
+    <select v-model="editBin.wasteType"
+            class="form-select mb-2">
+        <option value="General">Restaffald</option>
+        <option value="Paper">Papir</option>
+        <option value="Organic">Madaffald</option>
+        <option value="Metal">Metal</option>
+    </select>
+
+    <select v-model="editBin.locationId"
+            class="form-select mb-2">
+        <option v-for="loc in locations" :value="loc.id">
+            {{ loc.name }}
+        </option>
+    </select>
+
+    <div class="d-flex gap-2">
+        <button @click="saveEdit(bin.id)"
+                class="btn btn-success btn-sm w-100">
+            Gem
+        </button>
+        <button @click="cancelEdit"
+                class="btn btn-outline-secondary btn-sm w-100">
+            Annuller
+        </button>
+    </div>
+</div>
                         <div class="d-flex justify-content-between">
 
                             <div>
