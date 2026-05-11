@@ -2,50 +2,223 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <title>Tømningshistorik</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historik</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            background: #f5f7f9;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+
+            width: 250px;
+            height: 100vh;
+
+            background: white;
+            border-right: 1px solid #eaeaea;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            padding: 24px;
+            z-index: 1000;
+
+            overflow-y: auto;
+        }
+
+        .logo-img {
+            width: 220px;
+            max-width: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .menu {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 14px 16px;
+
+            border-radius: 14px;
+
+            text-decoration: none;
+            color: #64748b;
+
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .menu-item.active {
+            background: #e8f8ec;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        #app {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #22c55e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-box {
+            border-top: 1px solid #ececec;
+            padding-top: 20px;
+        }
+    </style>
 </head>
 
 <body>
 
-<div id="app" class="container py-5">
+<div id="app">
 
-    <h3 class="mb-4">Tømningshistorik</h3>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
 
-    <a href="index.html" class="btn btn-secondary mb-3">← Tilbage</a>
+        <div>
 
-    <!-- INFO OM SKRALDESPAND -->
-    <div v-if="bin" class="mb-4">
-        <h5>Skraldespand: {{ bin.name }}</h5>
-        <p class="mb-0">
-            Lokation: {{ getLocationName(bin.locationId) }} <br>
-            Affaldstype: {{ bin.wasteType }}
-        </p>
+            <div class="logo text-center">
+                <img src="TrashLogo.png" alt="Trash Bin Tracker Logo" class="logo-img">
+            </div>
+
+            <div class="menu">
+
+                <a href="index.html" class="menu-item">
+                    🏠 Dashboard
+                </a>
+
+                <a href="index.html" class="menu-item">
+                    🗑️ Mine skraldespande
+                </a>
+
+                <a href="history.html" class="menu-item active">
+                    📊 Historik
+                </a>
+
+                <a href="notifications.html" class="menu-item">
+                    🔔 Notifikationer
+                </a>
+
+                <a href="#" class="menu-item">
+                    ⚙️ Indstillinger
+                </a>
+
+                <a href="#" class="menu-item">
+                    ❓ Hjælp
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="user-box">
+
+            <div class="d-flex align-items-center gap-3 mb-3">
+
+                <div class="avatar">
+                    {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+                </div>
+
+                <div>
+
+                    <div class="fw-bold">
+                        {{ username }}
+                    </div>
+
+                    <small class="text-muted">
+                        Logget ind
+                    </small>
+
+                </div>
+
+            </div>
+
+            <button @click="logout"
+                    class="btn btn-light border w-100">
+
+                Log ud
+
+            </button>
+
+        </div>
+
     </div>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Tømt tidspunkt</th>
-            </tr>
-        </thead>
+    <!-- CONTENT -->
+    <div>
 
-        <tbody>
-            <tr v-for="h in history" :key="h.id">
-                <td>{{ h.id }}</td>
-                <td>{{ formatDate(h.emptiedAt) }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <h2 class="fw-bold">Tømningshistorik</h2>
+
+            <a href="index.html" class="btn btn-outline-secondary">
+                Tilbage
+            </a>
+
+        </div>
+
+        <div class="card p-4 shadow-sm">
+
+            <div v-if="history.length === 0">
+                Ingen historik fundet.
+            </div>
+
+            <div v-for="item in history"
+                 :key="item.id"
+                 class="border rounded p-3 mb-3">
+
+                <div class="fw-bold">
+                    Skraldespand ID: {{ item.trashBinId }}
+                </div>
+
+                <small class="text-muted">
+                    Tømt: {{ formatDate(item.emptiedAt) }}
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-<script src="History.js"></script>
+<script src="history.js"></script>
 
 </body>
 </html>
