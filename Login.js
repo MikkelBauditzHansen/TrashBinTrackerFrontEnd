@@ -32,7 +32,7 @@ Vue.createApp({
                 localStorage.setItem("username", this.auth.username);
 
                 // redirect
-                window.location.href = "index.html";
+                window.location.href = "Dashboard.html";
 
             }
 
