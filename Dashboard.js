@@ -664,6 +664,11 @@ Vue.createApp({
             this.getNotifications();
 
         }, 3000);
+        setInterval(() => {
+
+            this.getAllBins();
+
+        }, 5000);
 
         setInterval(async () => {
 
