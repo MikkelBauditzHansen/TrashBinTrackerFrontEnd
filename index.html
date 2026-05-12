@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="da">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,12 +37,15 @@
 
             padding: 24px;
             z-index: 1000;
+            overflow-y: auto;
+
         }
 
-        .logo {
-            font-size: 28px;
-            font-weight: 700;
-            line-height: 1.2;
+        .logo-img {
+            width: 220px;
+            max-width: 100%;
+            display: block;
+            margin: 0 auto;
         }
 
         .menu {
@@ -131,7 +135,7 @@
         .card {
             border: none;
             border-radius: 22px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             transition: 0.2s;
         }
 
@@ -170,7 +174,7 @@
         }
 
         .weather-card {
-        
+
             background: #eef5ff;
         }
 
@@ -222,609 +226,216 @@
 
 <body>
 
-<div id="app">
+    <div id="app">
 
-    <!-- SIDEBAR -->
+        <!-- SIDEBAR -->
 
-    <div class="sidebar">
-
-        <div>
-
-            <div class="logo">
-                🗑️ Trash Bin<br>
-                Tracker
-            </div>
-
-            <div class="menu">
-
-                <a href="index.html" class="menu-item active">
-                    🏠 Dashboard
-                </a>
-
-                <a href="index.html" class="menu-item">
-                    🗑️ Mine skraldespande
-                </a>
-
-                <a href="history.html" class="menu-item">
-                    📊 Historik
-                </a>
-
-                <a href="notifications.html" class="menu-item">
-                    🔔 Notifikationer
-                </a>
-
-                <a href="#" class="menu-item">
-                    ⚙️ Indstillinger
-                </a>
-
-                <a href="#" class="menu-item">
-                    ❓ Hjælp
-                </a>
-
-            </div>
-
-        </div>
-
-        <div class="user-box">
-
-            <div class="d-flex align-items-center gap-3 mb-3">
-
-                <div class="avatar">
-                    {{ username ? username.charAt(0).toUpperCase() : 'U' }}
-                </div>
-
-                <div>
-
-                    <div class="fw-bold">
-                        {{ username }}
-                    </div>
-
-                    <small class="text-muted">
-                        Logget ind
-                    </small>
-
-                </div>
-
-            </div>
-
-            <button @click="logout"
-                    class="btn btn-light border w-100">
-
-                Log ud
-
-            </button>
-
-        </div>
-
-    </div>
-
-    <!-- MAIN -->
-
-    <div class="topbar">
-
-        <div>
-
-            <div class="welcome-title">
-                Velkommen tilbage, {{ username }} 👋
-            </div>
-
-            <div class="subtext">
-                Her er status på dine skraldespande
-            </div>
-
-        </div>
-
-        <div class="top-icons">
-
-            <div class="weather-box" v-if="weather">
-                🌡️ {{ weather.temperature }}°C
-            </div>
-
-            <div class="weather-box" v-else>
-                Henter vejr...
-            </div>
-
-            
-
-            <div class="d-flex align-items-center gap-2">
-
-                <div class="avatar small-avatar">
-                    {{ username ? username.charAt(0).toUpperCase() : 'U' }}
-                </div>
-
-                <span>
-                    Hej, {{ username }}
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- CREATE BUTTON -->
-
-    <button @click="toggleForm"
-            class="btn btn-success px-4 py-2 mb-4">
-
-        + Opret skraldespand
-
-    </button>
-
-    <!-- FORM -->
-
-    <div v-if="showForm"
-         class="card p-4 mb-4">
-
-        <h5 class="fw-bold mb-3">
-            Ny skraldespand
-        </h5>
-
-        <input v-model="newBin.name"
-               class="form-control mb-3"
-               placeholder="Navn">
-
-        <select v-model="newBin.wasteType"
-                class="form-select mb-3">
-
-            <option disabled value="">
-                Vælg affaldstype
-            </option>
-
-            <option value="General">
-                Restaffald
-            </option>
-
-            <option value="Paper">
-                Papir
-            </option>
-
-            <option value="Organic">
-                Madaffald
-            </option>
-
-            <option value="Metal">
-                Metal
-            </option>
-
-        </select>
-
-        <select v-model="newBin.locationId"
-                class="form-select mb-3">
-
-            <option disabled value="">
-                Vælg lokation
-            </option>
-
-            <option v-for="loc in locations"
-                    :value="loc.id">
-
-                {{ loc.name }}
-                ({{ loc.isIndoor ? 'Indendørs' : 'Udendørs' }})
-
-            </option>
-
-        </select>
-        <div class="d-flex gap-2 mb-3">
-
-    <input v-model="newLocation"
-           class="form-control"
-           placeholder="Ny lokation">
-
-    <button @click="addLocation"
-            class="btn btn-outline-primary">
-        +
-    </button>
-
-</div>
-<div class="mb-3">
-
-    <div v-for="loc in locations"
-         :key="loc.id"
-         class="d-flex gap-2 mb-2">
-
-        <input v-model="loc.name"
-               class="form-control form-control-sm">
-
-        <select v-model="loc.isIndoor"
-                class="form-select form-select-sm"
-                style="max-width: 140px;">
-
-            <option :value="true">
-                Indendørs
-            </option>
-
-            <option :value="false">
-                Udendørs
-            </option>
-
-        </select>
-
-        <button @click="updateLocation(loc)"
-                class="btn btn-success btn-sm">
-
-            Gem
-
-        </button>
-
-        <button @click="deleteLocation(loc.id)"
-                class="btn btn-danger btn-sm">
-
-            Slet
-
-        </button>
-
-    </div>
-
-</div>
-
-        <div class="d-flex gap-2">
-
-            <button @click="addBin"
-                    class="btn btn-success w-100">
-
-                Gem
-
-            </button>
-
-            <button @click="toggleForm"
-                    class="btn btn-outline-secondary w-100">
-
-                Annuller
-
-            </button>
-
-        </div>
-
-    </div>
-
-    <!-- TEMPERATURE WARNINGS -->
-
-    <div v-if="temperatureWarnings.length > 0"
-         class="card temperature-warning-card p-4 mb-4">
-
-        <h5 class="fw-bold text-danger mb-3">
-            ⚠️ Temperatur-advarsel
-        </h5>
-
-        <div v-for="warning in temperatureWarnings"
-             :key="warning.binId"
-             class="temperature-warning-item">
-
-            <div class="fw-bold text-danger mb-1">
-                {{ warning.binName }} bør tømmes
-            </div>
+        <div class="sidebar">
 
             <div>
-                Madaffaldsspanden er
-                {{ warning.fillLevel }}% fuld,
-                og temperaturen er
-                {{ warning.temperature }}°C
-            </div>
 
-            <small class="text-muted">
-                Lokation:
-                {{ warning.locationName }}
-            </small>
+                <div class="logo text-center">
+                    <img src="TrashLogo.png" alt="Trash Bin Tracker Logo" class="logo-img">
+                </div>
 
-        </div>
+                <div class="menu">
 
-    </div>
+                    <a href="Dashboard.html" class="menu-item active">
+                        🏠 Dashboard
+                    </a>
 
-    <!-- CONTENT -->
+                    <a href="Dashboard.html" class="menu-item">
+                        🗑️ Mine skraldespande
+                    </a>
 
-    <div class="row g-4">
+                    <a href="History.html" class="menu-item">
+                        📊 Historik
+                    </a>
 
-        <!-- LEFT -->
+                    <a href="notifications.html" class="menu-item">
+                        🔔 Notifikationer
+                    </a>
 
-        <div class="col-lg-8">
+                    <a href="#" class="menu-item">
+                        ⚙️ Indstillinger
+                    </a>
 
-            <div class="row g-4">
-
-                <div v-for="bin in bins"
-                     :key="bin.id"
-                     class="col-md-6">
-
-                    <div class="card bin-card"
-                         :class="{ 'border border-danger': isTemperatureWarningBin(bin.id) }">
-
-                        <div class="dropdown position-absolute top-0 end-0 m-3">
-
-                            <button class="icon-btn"
-                                    data-bs-toggle="dropdown">
-
-                                ⋮
-
-                            </button>
-
-                            <ul class="dropdown-menu dropdown-menu-end">
-
-                                <li>
-
-                                    <button class="dropdown-item"
-                                            @click="startEdit(bin)">
-
-                                        Rediger
-
-                                    </button>
-                                    
-
-                                </li>
-
-                                <li>
-
-                                    <button class="dropdown-item text-danger"
-                                            @click="deleteBin(bin)">
-
-                                        Slet
-
-                                    </button>
-
-                                </li>
-
-                            </ul>
-
-                        </div>
-                            <!-- Redigeringsformular -->
-<div v-if="editId === bin.id" class="mb-3">
-    <input v-model="editBin.name"
-           class="form-control mb-2"
-           placeholder="Navn">
-
-    <select v-model="editBin.wasteType"
-            class="form-select mb-2">
-        <option value="General">Restaffald</option>
-        <option value="Paper">Papir</option>
-        <option value="Organic">Madaffald</option>
-        <option value="Metal">Metal</option>
-    </select>
-
-    <select v-model="editBin.locationId"
-            class="form-select mb-2">
-        <option v-for="loc in locations" :value="loc.id">
-            {{ loc.name }}
-        </option>
-    </select>
-
-    <div class="d-flex gap-2">
-        <button @click="saveEdit(bin.id)"
-                class="btn btn-success btn-sm w-100">
-            Gem
-        </button>
-        <button @click="cancelEdit"
-                class="btn btn-outline-secondary btn-sm w-100">
-            Annuller
-        </button>
-    </div>
-</div>
-                        <div class="d-flex justify-content-between">
-
-                            <div>
-
-                                <h5 class="fw-bold mb-1">
-                                    {{ bin.name }}
-                                </h5>
-
-                                <small class="text-muted">
-                                    {{ translateWaste(bin.wasteType) }}
-                                </small>
-
-                                <div v-if="isTemperatureWarningBin(bin.id)"
-                                     class="text-danger fw-bold mt-2">
-
-                                    ⚠️ Risiko for lugt
-
-                                </div>
-
-                            </div>
-
-                            <div class="text-end">
-
-                                <h2 class="fw-bold"
-                                    :class="getTextColor(bin.fillLevel)">
-
-                                    {{ bin.fillLevel }}%
-
-                                </h2>
-
-                                <div class="status-text"
-                                     :class="getTextColor(bin.fillLevel)">
-
-                                    {{ getFillText(bin.fillLevel) }}
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="progress my-4">
-
-                            <div class="progress-bar"
-                                 :class="getBarColor(bin.fillLevel)"
-                                 :style="{ width: bin.fillLevel + '%' }">
-                            </div>
-
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-
-                            <div>
-
-                                <small class="text-muted d-block">
-                                    Sidst tømt
-                                </small>
-
-                                <strong>
-                                    {{ formatDate(bin.lastEmptied) }}
-                                </strong>
-
-                            </div>
-
-                            <button class="btn btn-outline-secondary btn-sm details-btn"
-                                    @click="goToDetails(bin.id)">
-
-                                Se detaljer
-
-                            </button>
-
-                        </div>
-
-                        <button @click="emptyBin(bin)"
-                                class="btn btn-outline-success btn-sm w-100 mb-2">
-
-                            Marker som tømt
-
-                        </button>
-
-                        <button @click="increaseFill(bin)"
-                                class="btn btn-outline-secondary btn-sm w-100">
-
-                            +10%
-
-                        </button>
-
-                    </div>
+                    <a href="#" class="menu-item">
+                        ❓ Hjælp
+                    </a>
 
                 </div>
 
             </div>
 
-            <!-- TIP -->
+            <div class="user-box">
 
-            <div class="card tip-card p-4 mt-4">
+                <div class="d-flex align-items-center gap-3 mb-3">
 
-                🌱 Tip: Ved at sortere dit affald korrekt hjælper du miljøet.
-                Tak fordi du gør en forskel 💚
+                    <div class="avatar">
+                        {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+                    </div>
+
+                    <div>
+
+                        <div class="fw-bold">
+                            {{ username }}
+                        </div>
+
+                        <small class="text-muted">
+                            Logget ind
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <button @click="logout" class="btn btn-light border w-100">
+
+                    Log ud
+
+                </button>
 
             </div>
 
         </div>
 
-        <!-- RIGHT -->
+        <!-- MAIN -->
 
-        <div class="col-lg-4">
+        <div class="topbar">
 
-            <!-- NOTIFICATIONS -->
+            <div>
 
-            <div class="card p-4 sidebar-card mb-4">
+                <div class="welcome-title">
+                    Velkommen tilbage, {{ username }} 👋
+                </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="subtext">
+                    Her er status på dine skraldespande
+                </div>
 
-                    <h5 class="fw-bold mb-0">
-                        Notifikationer
-                    </h5>
+            </div>
 
-                    <span class="badge bg-danger">
-                        {{ notifications.length + temperatureWarnings.length }}
+            <div class="top-icons">
+
+                <div class="weather-box" v-if="weather">
+                    🌡️ {{ weather.temperature }}°C
+                </div>
+
+                <div class="weather-box" v-else>
+                    Henter vejr...
+                </div>
+
+
+
+                <div class="d-flex align-items-center gap-2">
+
+                    <div class="avatar small-avatar">
+                        {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+                    </div>
+
+                    <span>
+                        Hej, {{ username }}
                     </span>
 
                 </div>
 
-                <div v-for="warning in temperatureWarnings"
-                     :key="'temp-' + warning.binId"
-                     class="notification-item">
+            </div>
 
-                    <div class="fw-semibold mb-1 text-danger">
+        </div>
 
-                        🌡️ {{ warning.binName }}
-                        kan begynde at lugte
+        <!-- CREATE BUTTON -->
 
-                    </div>
+        <button v-if="role === 'Admin'" @click="toggleForm" class="btn btn-success px-4 py-2 mb-4">
 
-                    <small class="text-muted d-block mb-2">
+            + Opret skraldespand
 
-                        {{ warning.temperature }}°C ·
-                        {{ warning.fillLevel }}% fuld
+        </button>
 
-                    </small>
-                    <button class="btn btn-outline-danger btn-sm w-100"
-            @click="markTempAsRead(warning.binId)">
+        <!-- FORM -->
 
-        Læst
+        <div v-if="showForm" class="card p-4 mb-4">
 
-    </button>
+            <h5 class="fw-bold mb-3">
+                Ny skraldespand
+            </h5>
 
-                </div>
+            <input v-model="newBin.name" class="form-control mb-3" placeholder="Navn">
 
-                <div v-for="n in latestNotifications"
-                     :key="n.notificationId"
-                     class="notification-item">
+            <select v-model="newBin.wasteType" class="form-select mb-3">
 
-                    <div class="fw-semibold mb-1">
-                        ⚠️ {{ n.notificationMessage }}
-                    </div>
+                <option disabled value="">
+                    Vælg affaldstype
+                </option>
 
-                    <small class="text-muted d-block mb-2">
-                        {{ n.trashLevel }}%
-                    </small>
+                <option value="General">
+                    Restaffald
+                </option>
 
-                    <button class="btn btn-outline-danger btn-sm w-100"
-                            @click="markAsRead(n.notificationId)">
+                <option value="Paper">
+                    Papir
+                </option>
 
-                        Læst
+                <option value="Organic">
+                    Madaffald
+                </option>
 
-                    </button>
+                <option value="Metal">
+                    Metal
+                </option>
 
-                </div>
-                <a href="notifications.html" class="btn btn-outline-success w-100 mt-2">
-                    Se alle
-                </a>
- <!-- WEATHER -->
-            <div class="card weather-card p-4 mt-4"
-                 v-if="weather">
+            </select>
 
-                <h5 class="fw-bold mb-3">
-                    Vejr
-                </h5>
+            <select v-model="newBin.locationId" class="form-select mb-3">
 
-                <h2 class="mb-1">
-                    🌡️ {{ weather.temperature }}°C
-                </h2>
+                <option disabled value="">
+                    Vælg lokation
+                </option>
 
-                <div class="text-muted">
-                    Nedbør:
-                    {{ weather.precipitation }} mm
-                </div>
+                <option v-for="loc in locations" :value="loc.id">
 
-                <small class="text-muted d-block">
-                    Regn:
-                    {{ weather.rain }} mm
-                </small>
+                    {{ loc.name }}
+                    ({{ loc.isIndoor ? 'Indendørs' : 'Udendørs' }})
 
-                <small class="text-muted d-block">
-                    Byger:
-                    {{ weather.showers }} mm
-                </small>
+                </option>
 
-                <small class="text-muted d-block mb-3">
-                    Sne:
-                    {{ weather.snowfall }} mm
-                </small>
+            </select>
+            <div class="d-flex gap-2 mb-3">
 
-                <!-- TEST WEATHER -->
+                <input v-model="newLocation" class="form-control" placeholder="Ny lokation">
 
-                <label class="form-label fw-semibold">
-                    Test temperatur
-                </label>
+                <button @click="addLocation" class="btn btn-outline-primary">
+                    +
+                </button>
 
-                <div class="d-flex gap-2">
+            </div>
+            <div class="mb-3">
 
-                    <input type="number"
-                           class="form-control"
-                           v-model="testTemperature">
+                <div v-for="loc in locations" :key="loc.id" class="d-flex gap-2 mb-2">
 
-                    <button @click="setTestWeather"
-                            class="btn btn-warning">
+                    <input v-model="loc.name" class="form-control form-control-sm">
 
-                        Test
+                    <select v-model="loc.isIndoor" class="form-select form-select-sm" style="max-width: 140px;">
+
+                        <option :value="true">
+                            Indendørs
+                        </option>
+
+                        <option :value="false">
+                            Udendørs
+                        </option>
+
+                    </select>
+
+                    <button @click="updateLocation(loc)" class="btn btn-success btn-sm">
+
+                        Gem
 
                     </button>
 
-                    <button @click="resetWeather"
-                            class="btn btn-outline-secondary">
+                    <button @click="deleteLocation(loc.id)" class="btn btn-danger btn-sm">
 
-                        Reset
+                        Slet
 
                     </button>
 
@@ -832,20 +443,372 @@
 
             </div>
 
+            <div class="d-flex gap-2">
+
+                <button @click="addBin" class="btn btn-success w-100">
+
+                    Gem
+
+                </button>
+
+                <button @click="toggleForm" class="btn btn-outline-secondary w-100">
+
+                    Annuller
+
+                </button>
+
             </div>
 
-           
+        </div>
+
+        <!-- TEMPERATURE WARNINGS -->
+
+        <div v-if="temperatureWarnings.length > 0" class="card temperature-warning-card p-4 mb-4">
+
+            <h5 class="fw-bold text-danger mb-3">
+                ⚠️ Temperatur-advarsel
+            </h5>
+
+            <div v-for="warning in temperatureWarnings" :key="warning.binId" class="temperature-warning-item">
+
+                <div class="fw-bold text-danger mb-1">
+                    {{ warning.binName }} bør tømmes
+                </div>
+
+                <div>
+                    Madaffaldsspanden er
+                    {{ warning.fillLevel }}% fuld,
+                    og temperaturen er
+                    {{ warning.temperature }}°C
+                </div>
+
+                <small class="text-muted">
+                    Lokation:
+                    {{ warning.locationName }}
+                </small>
+
+            </div>
+
+        </div>
+
+        <!-- CONTENT -->
+
+        <div class="row g-4">
+
+            <!-- LEFT -->
+
+            <div class="col-lg-8">
+
+                <div class="row g-4">
+
+                    <div v-for="bin in bins" :key="bin.id" class="col-md-6">
+
+                        <div class="card bin-card" :class="{ 'border border-danger': isTemperatureWarningBin(bin.id) }">
+
+                            <div class="dropdown position-absolute top-0 end-0 m-3">
+
+                                <button class="icon-btn" data-bs-toggle="dropdown">
+
+                                    ⋮
+
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+
+                                    <li>
+
+                                        <button class="dropdown-item" @click="startEdit(bin)">
+
+                                            Rediger
+
+                                        </button>
+
+
+                                    </li>
+
+                                    <li>
+
+                                        <button class="dropdown-item text-danger" @click="deleteBin(bin)">
+
+                                            Slet
+
+                                        </button>
+
+                                    </li>
+
+                                </ul>
+
+                            </div>
+                            <!-- Redigeringsformular -->
+                            <div v-if="editId === bin.id" class="mb-3">
+                                <input v-model="editBin.name" class="form-control mb-2" placeholder="Navn">
+
+                                <select v-model="editBin.wasteType" class="form-select mb-2">
+                                    <option value="General">Restaffald</option>
+                                    <option value="Paper">Papir</option>
+                                    <option value="Organic">Madaffald</option>
+                                    <option value="Metal">Metal</option>
+                                </select>
+
+                                <select v-model="editBin.locationId" class="form-select mb-2">
+                                    <option v-for="loc in locations" :value="loc.id">
+                                        {{ loc.name }}
+                                    </option>
+                                </select>
+
+                                <div class="d-flex gap-2">
+                                    <button @click="saveEdit(bin.id)" class="btn btn-success btn-sm w-100">
+                                        Gem
+                                    </button>
+                                    <button @click="cancelEdit" class="btn btn-outline-secondary btn-sm w-100">
+                                        Annuller
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+
+                                <div>
+
+                                    <h5 class="fw-bold mb-1">
+                                        {{ bin.name }}
+                                    </h5>
+
+                                    <small class="text-muted">
+                                        {{ translateWaste(bin.wasteType) }}
+                                    </small>
+
+                                    <div class="text-muted small">
+                                        {{ getLocationName(bin.locationId) }}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        {{ locations.find(l => l.id === bin.locationId)?.isIndoor
+                                        ? 'Indendørs'
+                                        : 'Udendørs' }}
+                                    </div>
+
+                                    <div v-if="isTemperatureWarningBin(bin.id)" class="text-danger fw-bold mt-2">
+
+                                        ⚠️ Risiko for lugt
+
+                                    </div>
+
+                                </div>
+
+                                <div class="text-end">
+
+                                    <h2 class="fw-bold" :class="getTextColor(bin.fillLevel)">
+
+                                        {{ bin.fillLevel }}%
+
+                                    </h2>
+
+                                    <div class="status-text" :class="getTextColor(bin.fillLevel)">
+
+                                        {{ getFillText(bin.fillLevel) }}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="progress my-4">
+
+                                <div class="progress-bar" :class="getBarColor(bin.fillLevel)"
+                                    :style="{ width: bin.fillLevel + '%' }">
+                                </div>
+
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                <div>
+
+                                    <small class="text-muted d-block">
+                                        Sidst tømt
+                                    </small>
+
+                                    <strong>
+                                        {{ formatDate(bin.lastEmptied) }}
+                                    </strong>
+
+                                </div>
+
+                                <button class="btn btn-outline-secondary btn-sm details-btn"
+                                    @click="goToDetails(bin.id)">
+
+                                    Se detaljer
+
+                                </button>
+
+                            </div>
+
+                            <button @click="emptyBin(bin)" class="btn btn-outline-success btn-sm w-100 mb-2">
+
+                                Marker som tømt
+
+                            </button>
+
+                            <button @click="increaseFill(bin)" class="btn btn-outline-secondary btn-sm w-100">
+
+                                +10%
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- TIP -->
+
+                <div class="card tip-card p-4 mt-4">
+
+                    🌱 Tip: Ved at sortere dit affald korrekt hjælper du miljøet.
+                    Tak fordi du gør en forskel 💚
+
+                </div>
+
+            </div>
+
+            <!-- RIGHT -->
+
+            <div class="col-lg-4">
+
+                <!-- NOTIFICATIONS -->
+
+                <div class="card p-4 sidebar-card mb-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+
+                        <h5 class="fw-bold mb-0">
+                            Notifikationer
+                        </h5>
+
+                        <span class="badge bg-danger">
+                            {{ notifications.length + temperatureWarnings.length }}
+                        </span>
+
+                    </div>
+
+                    <div v-for="warning in temperatureWarnings" :key="'temp-' + warning.binId"
+                        class="notification-item">
+
+                        <div class="fw-semibold mb-1 text-danger">
+
+                            🌡️ {{ warning.binName }}
+                            kan begynde at lugte
+
+                        </div>
+
+                        <small class="text-muted d-block mb-2">
+
+                            {{ warning.temperature }}°C ·
+                            {{ warning.fillLevel }}% fuld
+
+                        </small>
+                        <button class="btn btn-outline-danger btn-sm w-100" @click="markTempAsRead(warning.binId)">
+
+                            Læst
+
+                        </button>
+
+                    </div>
+
+                    <div v-for="n in latestNotifications" :key="n.notificationId" class="notification-item">
+
+                        <div class="fw-semibold mb-1">
+                            ⚠️ {{ n.notificationMessage }}
+                        </div>
+
+                        <small class="text-muted d-block mb-2">
+                            {{ n.trashLevel }}%
+                        </small>
+
+                        <button class="btn btn-outline-danger btn-sm w-100" @click="markAsRead(n.notificationId)">
+
+                            Læst
+
+                        </button>
+
+                    </div>
+                    <a href="notifications.html" class="btn btn-outline-success w-100 mt-2">
+                        Se alle
+                    </a>
+                    <!-- WEATHER -->
+                    <div class="card weather-card p-4 mt-4" v-if="weather">
+
+                        <h5 class="fw-bold mb-3">
+                            Vejr
+                        </h5>
+
+                        <h2 class="mb-1">
+                            🌡️ {{ weather.temperature }}°C
+                        </h2>
+
+                        <div class="text-muted">
+                            Nedbør:
+                            {{ weather.precipitation }} mm
+                        </div>
+
+                        <small class="text-muted d-block">
+                            Regn:
+                            {{ weather.rain }} mm
+                        </small>
+
+                        <small class="text-muted d-block">
+                            Byger:
+                            {{ weather.showers }} mm
+                        </small>
+
+                        <small class="text-muted d-block mb-3">
+                            Sne:
+                            {{ weather.snowfall }} mm
+                        </small>
+
+                        <!-- TEST WEATHER -->
+
+                        <label class="form-label fw-semibold">
+                            Test temperatur
+                        </label>
+
+                        <div class="d-flex gap-2">
+
+                            <input type="number" class="form-control" v-model="testTemperature">
+
+                            <button @click="setTestWeather" class="btn btn-warning">
+
+                                Test
+
+                            </button>
+
+                            <button @click="resetWeather" class="btn btn-outline-secondary">
+
+                                Reset
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
         </div>
 
     </div>
 
-</div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="index.js"></script>
+    <script src="index.js"></script>
 
 </body>
+
 </html>
