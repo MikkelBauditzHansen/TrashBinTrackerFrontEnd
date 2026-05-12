@@ -5,7 +5,8 @@ Vue.createApp({
     data() {
         return {
             history: [],
-            jwtToken: localStorage.getItem("token")
+            jwtToken: localStorage.getItem("token"),
+            username: localStorage.getItem("username")
         };
     },
 
@@ -38,6 +39,14 @@ Vue.createApp({
         formatDate(date) {
             if (!date) return "Ukendt";
             return new Date(date).toLocaleString("da-DK");
+        },
+        logout() {
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("username");
+            localStorage.removeItem("role");
+
+            window.location.href = "Login.html";
         }
     },
 
