@@ -18,27 +18,56 @@
             position: fixed;
             top: 0;
             left: 0;
+
             width: 250px;
             height: 100vh;
+
             background: white;
             border-right: 1px solid #eaeaea;
-            padding: 24px;
+
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+
+            padding: 24px;
+            z-index: 1000;
+
+            overflow-y: auto;
+        }
+
+        .logo-img {
+            width: 220px;
+            max-width: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .menu {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .menu-item {
-            display: block;
-            padding: 12px;
-            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 14px 16px;
+
+            border-radius: 14px;
+
             text-decoration: none;
             color: #64748b;
-            margin-bottom: 6px;
+
+            font-weight: 500;
+            transition: 0.2s;
         }
 
         .menu-item:hover {
             background: #f3f4f6;
+            color: #111827;
         }
 
         .menu-item.active {
@@ -63,6 +92,11 @@
             justify-content: center;
             font-weight: bold;
         }
+
+        .user-box {
+            border-top: 1px solid #ececec;
+            padding-top: 20px;
+        }
     </style>
 </head>
 
@@ -74,15 +108,22 @@
     <div class="sidebar">
 
         <div>
-            <h4 class="fw-bold">🗑️ Trash Bin Tracker</h4>
 
-            <div class="mt-4">
+            <div class="logo text-center">
+                <img src="TrashLogo.png" alt="Trash Bin Tracker Logo" class="logo-img">
+            </div>
 
-                <a href="index.html" class="menu-item">
+            <div class="menu">
+
+                <a href="Dashboard.html" class="menu-item">
                     🏠 Dashboard
                 </a>
 
-                <a href="history.html" class="menu-item active">
+                <a href="Dashboard.html" class="menu-item">
+                    🗑️ Mine skraldespande
+                </a>
+
+                <a href="History.html" class="menu-item active">
                     📊 Historik
                 </a>
 
@@ -90,18 +131,47 @@
                     🔔 Notifikationer
                 </a>
 
+                <a href="#" class="menu-item">
+                    ⚙️ Indstillinger
+                </a>
+
+                <a href="#" class="menu-item">
+                    ❓ Hjælp
+                </a>
+
             </div>
+
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <div class="avatar">
-                {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+        <div class="user-box">
+
+            <div class="d-flex align-items-center gap-3 mb-3">
+
+                <div class="avatar">
+                    {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+                </div>
+
+                <div>
+
+                    <div class="fw-bold">
+                        {{ username }}
+                    </div>
+
+                    <small class="text-muted">
+                        Logget ind
+                    </small>
+
+                </div>
+
             </div>
 
-            <div>
-                <div class="fw-bold">{{ username }}</div>
-                <small class="text-muted">Logget ind</small>
-            </div>
+            <button @click="logout"
+                    class="btn btn-light border w-100">
+
+                Log ud
+
+            </button>
+
         </div>
 
     </div>
@@ -113,7 +183,7 @@
 
             <h2 class="fw-bold">Tømningshistorik</h2>
 
-            <a href="index.html" class="btn btn-outline-secondary">
+            <a href="Dashboard.html" class="btn btn-outline-secondary">
                 Tilbage
             </a>
 
