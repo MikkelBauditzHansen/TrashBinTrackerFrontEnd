@@ -10,7 +10,10 @@ Vue.createApp({
 
             temperatureWarnings: JSON.parse(
                 localStorage.getItem("temperatureWarnings")
-            ) || []
+
+            ) || [],
+            username: localStorage.getItem("username")
+            
         };
     },
 
@@ -68,6 +71,14 @@ Vue.createApp({
                     this.temperatureWarnings
                 )
             );
+        },
+        logout() {
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("username");
+            localStorage.removeItem("role");
+
+            window.location.href = "Login.html";
         }
     },
 
