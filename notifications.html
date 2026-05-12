@@ -170,167 +170,71 @@
 
 <body>
 
-<div id="app">
+    <div id="app">
 
-    <div class="sidebar">
-
-        <div>
-
-            <div class="logo text-center">
-                <img src="TrashLogo.png" alt="Trash Bin Tracker Logo" class="logo-img">
-            </div>
-
-            <div class="menu">
-
-                <a href="index.html" class="menu-item">
-                    🏠 Dashboard
-                </a>
-
-                <a href="index.html" class="menu-item">
-                    🗑️ Mine skraldespande
-                </a>
-
-                <a href="history.html" class="menu-item">
-                    📊 Historik
-                </a>
-
-                <a href="notifications.html" class="menu-item active">
-                    🔔 Notifikationer
-                </a>
-
-                <a href="#" class="menu-item">
-                    ⚙️ Indstillinger
-                </a>
-
-                <a href="#" class="menu-item">
-                    ❓ Hjælp
-                </a>
-
-            </div>
-
-        </div>
-
-        <div class="user-box">
-
-            <div class="d-flex align-items-center gap-3 mb-3">
-
-                <div class="avatar">
-                    {{ username ? username.charAt(0).toUpperCase() : 'U' }}
-                </div>
-
-                <div>
-
-                    <div class="fw-bold">
-                        {{ username }}
-                    </div>
-
-                    <small class="text-muted">
-                        Logget ind
-                    </small>
-
-                </div>
-
-            </div>
-
-            <button @click="logout"
-                    class="btn btn-light border w-100">
-
-                Log ud
-
-            </button>
-
-        </div>
-
-    </div>
-
-    <div style="margin-left:250px; padding:40px;">
-
-        <!-- TOP -->
-
-        <div class="topbar d-flex justify-content-between align-items-center">
+        <div class="sidebar">
 
             <div>
 
-                <div class="page-title">
-                    🔔 Notifikationer
+                <div class="logo text-center">
+                    <img src="TrashLogo.png" alt="Trash Bin Tracker Logo" class="logo-img">
                 </div>
 
-                <div class="text-muted">
-                    Temperatur-advarsler og fyldningsbeskeder
+                <div class="menu">
+
+                    <a href="index.html" class="menu-item">
+                        🏠 Dashboard
+                    </a>
+
+                    <a href="index.html" class="menu-item">
+                        🗑️ Mine skraldespande
+                    </a>
+
+                    <a href="history.html" class="menu-item">
+                        📊 Historik
+                    </a>
+
+                    <a href="notifications.html" class="menu-item active">
+                        🔔 Notifikationer
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        ⚙️ Indstillinger
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        ❓ Hjælp
+                    </a>
+
                 </div>
 
             </div>
 
-            <a href="index.html" class="btn btn-outline-secondary">
+            <div class="user-box">
 
-                ← Tilbage
+                <div class="d-flex align-items-center gap-3 mb-3">
 
-            </a>
-
-        </div>
-
-        <!-- EMPTY -->
-
-        <div v-if="notifications.length === 0 && temperatureWarnings.length === 0"
-             class="text-muted text-center mt-5">
-
-            Ingen notifikationer
-
-        </div>
-
-        <!-- TEMPERATURE WARNINGS -->
-
-        <div v-for="warning in temperatureWarnings"
-             :key="'temp-' + warning.binId"
-             class="notification-card temperature-warning p-4 mb-3">
-
-            <div class="d-flex justify-content-between align-items-start">
-
-                <div class="d-flex gap-3">
-
-                    <div class="notification-icon temperature-icon">
-                        🌡️
+                    <div class="avatar">
+                        {{ username ? username.charAt(0).toUpperCase() : 'U' }}
                     </div>
 
                     <div>
 
-                        <div class="d-flex align-items-center gap-2 mb-2">
-
-                            <div class="notification-title text-danger">
-                                Madaffald kan begynde at lugte
-                            </div>
-
-                            <div class="warning-badge">
-                                Høj temperatur
-                            </div>
-
+                        <div class="fw-bold">
+                            {{ username }}
                         </div>
 
-                        <div class="mb-2">
-
-                            <strong>
-                                {{ warning.binName }}
-                            </strong>
-
-                            er {{ warning.fillLevel }}% fuld og temperaturen er
-                            {{ warning.temperature }}°C.
-
-                        </div>
-
-                        <div class="notification-time">
-
-                            📍 {{ warning.locationName }}
-
-                        </div>
+                        <small class="text-muted">
+                            Logget ind
+                        </small>
 
                     </div>
 
                 </div>
 
-                <button class="btn btn-outline-danger btn-sm"
-                        @click="removeTemperatureWarning(warning.binId)">
+                <button @click="logout" class="btn btn-light border w-100">
 
-                    Læst
+                    Log ud
 
                 </button>
 
@@ -338,51 +242,144 @@
 
         </div>
 
-        <!-- NORMAL NOTIFICATIONS -->
+        <div style="margin-left:250px; padding:40px;">
 
-        <div v-for="n in notifications"
-             :key="n.notificationId"
-             class="notification-card normal-notification p-4 mb-3">
+            <!-- TOP -->
 
-            <div class="d-flex justify-content-between align-items-start">
+            <div class="topbar d-flex justify-content-between align-items-center">
 
-                <div class="d-flex gap-3">
+                <div>
 
-                    <div class="notification-icon normal-icon">
-                        🗑️
+                    <div class="page-title">
+                        🔔 Notifikationer
                     </div>
 
-                    <div>
-
-                        <div class="notification-title mb-2">
-
-                            {{ n.notificationMessage }}
-
-                        </div>
-
-                        <div class="mb-2">
-
-                            Fyldningsgrad:
-                            <strong>{{ n.trashLevel }}%</strong>
-
-                        </div>
-
-                        <div class="notification-time">
-
-                            Automatisk systembesked
-
-                        </div>
-
+                    <div class="text-muted">
+                        Temperatur-advarsler og fyldningsbeskeder
                     </div>
 
                 </div>
 
-                <button class="btn btn-outline-success btn-sm"
-                        @click="markAsRead(n.notificationId)">
+                <a href="index.html" class="btn btn-outline-secondary">
 
-                    Læst
+                    ← Tilbage
 
-                </button>
+                </a>
+
+            </div>
+
+            <!-- EMPTY -->
+
+            <div v-if="notifications.length === 0 && temperatureWarnings.length === 0"
+                class="text-muted text-center mt-5">
+
+                Ingen notifikationer
+
+            </div>
+
+            <!-- TEMPERATURE WARNINGS -->
+
+            <div v-for="warning in temperatureWarnings" :key="'temp-' + warning.binId"
+                class="notification-card temperature-warning p-4 mb-3">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div class="d-flex gap-3">
+
+                        <div class="notification-icon temperature-icon">
+                            🌡️
+                        </div>
+
+                        <div>
+
+                            <div class="d-flex align-items-center gap-2 mb-2">
+
+                                <div class="notification-title text-danger">
+                                    Madaffald kan begynde at lugte
+                                </div>
+
+                                <div class="warning-badge">
+                                    Høj temperatur
+                                </div>
+
+                            </div>
+
+                            <div class="mb-2">
+
+                                <strong>
+                                    {{ warning.binName }}
+                                </strong>
+
+                                er {{ warning.fillLevel }}% fuld og temperaturen er
+                                {{ warning.temperature }}°C.
+
+                            </div>
+
+                            <div class="notification-time">
+
+                                📍 {{ warning.locationName }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <button class="btn btn-outline-danger btn-sm" @click="removeTemperatureWarning(warning.binId)">
+
+                        Læst
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- NORMAL NOTIFICATIONS -->
+
+            <div v-for="n in notifications" :key="n.notificationId"
+                class="notification-card normal-notification p-4 mb-3">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div class="d-flex gap-3">
+
+                        <div class="notification-icon normal-icon">
+                            🗑️
+                        </div>
+
+                        <div>
+
+                            <div class="notification-title mb-2">
+
+                                {{ n.notificationMessage }}
+
+                            </div>
+
+                            <div class="mb-2">
+
+                                Fyldningsgrad:
+                                <strong>{{ n.trashLevel }}%</strong>
+
+                            </div>
+
+                            <div class="notification-time">
+
+                                Automatisk systembesked
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <button class="btn btn-outline-success btn-sm" @click="markAsRead(n.notificationId)">
+
+                        Læst
+
+                    </button>
+
+                </div>
 
             </div>
 
@@ -390,12 +387,10 @@
 
     </div>
 
-</div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-<script src="notifications.js"></script>
+    <script src="notifications.js"></script>
 
 </body>
 

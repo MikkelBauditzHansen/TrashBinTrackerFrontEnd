@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="da">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -102,123 +103,121 @@
 
 <body>
 
-<div id="app">
+    <div id="app">
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
 
-        <div>
+            <div>
 
-            <div class="logo text-center">
-                <img src="TrashLogo.png" alt="Trash Bin Tracker Logo" class="logo-img">
+                <div class="logo text-center">
+                    <img src="TrashLogo.png" alt="Trash Bin Tracker Logo" class="logo-img">
+                </div>
+
+                <div class="menu">
+
+                    <a href="index.html" class="menu-item">
+                        🏠 Dashboard
+                    </a>
+
+                    <a href="index.html" class="menu-item">
+                        🗑️ Mine skraldespande
+                    </a>
+
+                    <a href="history.html" class="menu-item active">
+                        📊 Historik
+                    </a>
+
+                    <a href="notifications.html" class="menu-item">
+                        🔔 Notifikationer
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        ⚙️ Indstillinger
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        ❓ Hjælp
+                    </a>
+
+                </div>
+
             </div>
 
-            <div class="menu">
+            <div class="user-box">
 
-                <a href="index.html" class="menu-item">
-                    🏠 Dashboard
-                </a>
+                <div class="d-flex align-items-center gap-3 mb-3">
 
-                <a href="index.html" class="menu-item">
-                    🗑️ Mine skraldespande
-                </a>
+                    <div class="avatar">
+                        {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+                    </div>
 
-                <a href="history.html" class="menu-item active">
-                    📊 Historik
-                </a>
+                    <div>
 
-                <a href="notifications.html" class="menu-item">
-                    🔔 Notifikationer
-                </a>
+                        <div class="fw-bold">
+                            {{ username }}
+                        </div>
 
-                <a href="#" class="menu-item">
-                    ⚙️ Indstillinger
-                </a>
+                        <small class="text-muted">
+                            Logget ind
+                        </small>
 
-                <a href="#" class="menu-item">
-                    ❓ Hjælp
-                </a>
+                    </div>
+
+                </div>
+
+                <button @click="logout" class="btn btn-light border w-100">
+
+                    Log ud
+
+                </button>
 
             </div>
 
         </div>
 
-        <div class="user-box">
+        <!-- CONTENT -->
+        <div>
 
-            <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-4">
 
-                <div class="avatar">
-                    {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+                <h2 class="fw-bold">Tømningshistorik</h2>
+
+                <a href="index.html" class="btn btn-outline-secondary">
+                    Tilbage
+                </a>
+
+            </div>
+
+            <div class="card p-4 shadow-sm">
+
+                <div v-if="history.length === 0">
+                    Ingen historik fundet.
                 </div>
 
-                <div>
+                <div v-for="item in history" :key="item.id" class="border rounded p-3 mb-3">
 
                     <div class="fw-bold">
-                        {{ username }}
+                        Skraldespand ID: {{ item.trashBinId }}
                     </div>
 
                     <small class="text-muted">
-                        Logget ind
+                        Tømt: {{ formatDate(item.emptiedAt) }}
                     </small>
 
                 </div>
 
             </div>
 
-            <button @click="logout"
-                    class="btn btn-light border w-100">
-
-                Log ud
-
-            </button>
-
         </div>
 
     </div>
 
-    <!-- CONTENT -->
-    <div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-
-            <h2 class="fw-bold">Tømningshistorik</h2>
-
-            <a href="index.html" class="btn btn-outline-secondary">
-                Tilbage
-            </a>
-
-        </div>
-
-        <div class="card p-4 shadow-sm">
-
-            <div v-if="history.length === 0">
-                Ingen historik fundet.
-            </div>
-
-            <div v-for="item in history"
-                 :key="item.id"
-                 class="border rounded p-3 mb-3">
-
-                <div class="fw-bold">
-                    Skraldespand ID: {{ item.trashBinId }}
-                </div>
-
-                <small class="text-muted">
-                    Tømt: {{ formatDate(item.emptiedAt) }}
-                </small>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-<script src="history.js"></script>
+    <script src="history.js"></script>
 
 </body>
+
 </html>
