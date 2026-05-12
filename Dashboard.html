@@ -570,12 +570,22 @@
                                 <div>
 
                                     <h5 class="fw-bold mb-1">
-                                        {{ bin.name }}
+                                         {{ bin.name }}
                                     </h5>
 
                                     <small class="text-muted">
-                                        {{ translateWaste(bin.wasteType) }}
+                                       - {{ translateWaste(bin.wasteType) }}
                                     </small>
+
+                                    <div class="text-muted small">
+                                        - {{ getLocationName(bin.locationId) }}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        {{ locations.find(l => l.id === bin.locationId)?.isIndoor
+                                        ? '- Indendørs'
+                                        : ' - Udendørs' }}
+                                    </div>
 
                                     <div v-if="isTemperatureWarningBin(bin.id)" class="text-danger fw-bold mt-2">
 
