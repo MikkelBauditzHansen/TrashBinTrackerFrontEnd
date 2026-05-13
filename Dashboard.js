@@ -148,30 +148,43 @@ Vue.createApp({
             }
         },
 
-        setTestWeather() {
+async setTestWeather() {
 
-            if (!this.weather) {
-                return;
-            }
+    if (!this.weather) {
+        return;
+    }
 
-            this.weather.temperature =
-                Number(this.testTemperature);
+    this.weather.temperature =
+        Number(this.testTemperature);
 
-            this.checkTemperatureWarnings();
-        },
+    this.checkTemperatureWarnings();
 
-        resetWeather() {
+    for (const warning of this.temperatureWarnings) {
 
-            if (!this.originalWeather) {
-                return;
-            }
+        await axios.post(
+            "https://localhost:7159/api/Telegram/temperature-test",
+            {
+                binName: warning.binName,
+                fillLevel: warning.fillLevel,
+                temperature: Number(this.testTemperature)
+            },
+            this.authConfig()
+        );
+    }
+},
 
-            this.weather = {
-                ...this.originalWeather
-            };
+resetWeather() {
 
-            this.checkTemperatureWarnings();
-        },
+    if (!this.originalWeather) {
+        return;
+    }
+
+    this.weather = {
+        ...this.originalWeather
+    };
+
+    this.checkTemperatureWarnings();
+},
 
         // ---------------- TEMPERATURE WARNINGS ----------------
 
@@ -305,6 +318,19 @@ Vue.createApp({
             );
         },
 
+        markTempAsRead(binId) {
+
+            this.temperatureWarnings =
+                this.temperatureWarnings.filter(
+                    w => w.binId !== binId
+                );
+
+            localStorage.setItem(
+                "temperatureWarnings",
+                JSON.stringify(this.temperatureWarnings)
+            );
+        },
+
         // ---------------- BINS ----------------
 
         async getAllBins() {
@@ -367,6 +393,10 @@ Vue.createApp({
 
         async saveEdit(id) {
 
+            const previousBin = this.bins.find(
+                b => b.id === id
+            );
+
             const res = await axios.put(
 
                 `${baseUrl}/${id}`,
@@ -381,6 +411,11 @@ Vue.createApp({
             );
 
             this.bins[index] = res.data;
+
+            await this.sendTemperatureWarningIfNeeded(
+                previousBin,
+                res.data
+            );
 
             this.editId = null;
 
@@ -534,6 +569,65 @@ Vue.createApp({
                 : "Ukendt";
         },
 
+        isFoodWaste(bin) {
+
+            return bin.wasteType === "Organic" ||
+                bin.wasteType === "Madaffald" ||
+                bin.wasteType === "Food" ||
+                bin.wasteType === 2;
+        },
+
+        isOutdoorBin(bin) {
+
+            const location = this.locations.find(
+                l => Number(l.id) === Number(bin.locationId)
+            );
+
+            if (!location) {
+                return false;
+            }
+
+            return location.isIndoor === false ||
+                location.isIndoor === "false";
+        },
+
+        async sendTemperatureWarningIfNeeded(previousBin, updatedBin) {
+
+            if (!previousBin || !updatedBin || !this.weather) {
+                return;
+            }
+
+            const previousLevel =
+                Number(previousBin.fillLevel);
+
+            const currentLevel =
+                Number(updatedBin.fillLevel);
+
+            const temperature =
+                Number(this.weather.temperature);
+
+            if (
+                !this.isFoodWaste(updatedBin) ||
+                !this.isOutdoorBin(updatedBin) ||
+                temperature <= 20 ||
+                currentLevel < 50 ||
+                currentLevel <= previousLevel ||
+                currentLevel % 10 !== 0
+            ) {
+                return;
+            }
+
+            await axios.post(
+                "https://localhost:7159/api/Telegram/temperature-test",
+                {
+                    binName: updatedBin.name || previousBin.name || "Madaffald",
+                    fillLevel: currentLevel,
+                    temperature
+                },
+                this.authConfig()
+            );
+        },
+
         async increaseFill(bin) {
 
             let newLevel =
@@ -564,6 +658,11 @@ Vue.createApp({
             );
 
             this.bins[index] = res.data;
+
+            await this.sendTemperatureWarningIfNeeded(
+                bin,
+                res.data
+            );
 
             await this.getNotifications();
 
@@ -662,11 +761,6 @@ Vue.createApp({
         setInterval(() => {
 
             this.getNotifications();
-
-        }, 3000);
-        setInterval(() => {
-
-            this.getAllBins();
 
         }, 5000);
 
