@@ -1,7 +1,9 @@
-const baseUrl = "https://localhost:7159/api/TrashBinTracker";
-const locationUrl = "https://localhost:7159/api/Location";
-const notificationUrl = "https://localhost:7159/api/Notification";
-const weatherUrl = "https://localhost:7159/api/Weather";
+const apiBaseUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net";
+const baseUrl = `${apiBaseUrl}/api/TrashBinTracker`;
+const locationUrl = `${apiBaseUrl}/api/Location`;
+const notificationUrl = `${apiBaseUrl}/api/Notification`;
+const weatherUrl = `${apiBaseUrl}/api/Weather`;
+const telegramTemperatureUrl = `${apiBaseUrl}/api/Telegram/temperature-test`;
 
 Vue.createApp({
 
@@ -38,6 +40,8 @@ Vue.createApp({
                 locationId: "",
                 fillLevel: 0
             },
+
+            apiError: "",
 
             jwtToken: localStorage.getItem("token"),
             role: localStorage.getItem("role"),
@@ -76,6 +80,12 @@ Vue.createApp({
                     Authorization: `Bearer ${this.jwtToken}`
                 }
             };
+        },
+
+        handleApiError(error, fallbackMessage) {
+
+            this.apiError = fallbackMessage;
+            console.error(fallbackMessage, error);
         },
 
         toggleForm() {
@@ -137,7 +147,7 @@ Vue.createApp({
                     ...this.weather
                 };
 
-                this.checkTemperatureWarnings();
+                await this.checkTemperatureWarnings();
 
             } catch (error) {
 
@@ -157,23 +167,40 @@ async setTestWeather() {
     this.weather.temperature =
         Number(this.testTemperature);
 
-    this.checkTemperatureWarnings();
+    await this.checkTemperatureWarnings();
+},
+async setActiveSensorBin(bin) {
 
-    for (const warning of this.temperatureWarnings) {
-
-        await axios.post(
-            "https://localhost:7159/api/Telegram/temperature-test",
-            {
-                binName: warning.binName,
-                fillLevel: warning.fillLevel,
-                temperature: Number(this.testTemperature)
-            },
+    try {
+        await axios.put(
+            `${baseUrl}/${bin.id}/active-sensor`,
+            null,
             this.authConfig()
         );
-    }
-},
+    } catch (error) {
+        this.handleApiError(
+            error,
+            "Kunne ikke vælge aktiv sensor."
+        );
 
-resetWeather() {
+        return;
+    }
+
+    for (const b of this.bins) {
+        b.isActiveSensorBin = false;
+    }
+
+    const index = this.bins.findIndex(
+        b => b.id === bin.id
+    );
+
+    if (index !== -1) {
+        this.bins[index].isActiveSensorBin = true;
+    }
+
+    this.apiError = "";
+},
+async resetWeather() {
 
     if (!this.originalWeather) {
         return;
@@ -183,12 +210,12 @@ resetWeather() {
         ...this.originalWeather
     };
 
-    this.checkTemperatureWarnings();
+    await this.checkTemperatureWarnings();
 },
 
         // ---------------- TEMPERATURE WARNINGS ----------------
 
-        checkTemperatureWarnings() {
+        async checkTemperatureWarnings() {
 
             if (
                 !this.weather ||
@@ -199,6 +226,8 @@ resetWeather() {
             }
 
             this.temperatureWarnings = [];
+            const sentLevels =
+                this.getSentTemperatureWarningLevels();
 
             for (const bin of this.bins) {
 
@@ -230,7 +259,8 @@ resetWeather() {
                     Number(this.weather.temperature) > 20;
 
                 const fillOk =
-                    Number(bin.fillLevel) >= 50;
+                    Number(bin.fillLevel) >= 50 &&
+                    Number(bin.fillLevel) % 10 === 0;
 
                 console.log("TJEK:", {
 
@@ -274,6 +304,11 @@ resetWeather() {
 
                         fillLevel: bin.fillLevel
                     });
+
+                    await this.sendTemperatureWarningForLevel(
+                        bin,
+                        sentLevels
+                    );
                 }
             }
 
@@ -331,6 +366,79 @@ resetWeather() {
             );
         },
 
+        getSentTemperatureWarningLevels() {
+
+            try {
+                return JSON.parse(
+                    localStorage.getItem("sentTemperatureWarningLevels")
+                ) || {};
+            } catch {
+                return {};
+            }
+        },
+
+        saveSentTemperatureWarningLevels(sentLevels) {
+
+            localStorage.setItem(
+                "sentTemperatureWarningLevels",
+                JSON.stringify(sentLevels)
+            );
+        },
+
+        resetSentTemperatureWarningLevels(bin) {
+
+            const sentLevels =
+                this.getSentTemperatureWarningLevels();
+
+            const binKey =
+                String(bin.id);
+
+            if (!sentLevels[binKey]) {
+                return;
+            }
+
+            sentLevels[binKey] =
+                sentLevels[binKey].filter(
+                    level => Number(level) <= Number(bin.fillLevel)
+                );
+
+            if (sentLevels[binKey].length === 0) {
+                delete sentLevels[binKey];
+            }
+
+            this.saveSentTemperatureWarningLevels(sentLevels);
+        },
+
+        async sendTemperatureWarningForLevel(bin, sentLevels) {
+
+            const fillLevel =
+                Number(bin.fillLevel);
+
+            const binKey =
+                String(bin.id);
+
+            if (!sentLevels[binKey]) {
+                sentLevels[binKey] = [];
+            }
+
+            if (sentLevels[binKey].includes(fillLevel)) {
+                return;
+            }
+
+            await axios.post(
+                telegramTemperatureUrl,
+                {
+                    binName: bin.name || "Madaffald",
+                    fillLevel,
+                    temperature: Number(this.weather.temperature)
+                },
+                this.authConfig()
+            );
+
+            sentLevels[binKey].push(fillLevel);
+            this.saveSentTemperatureWarningLevels(sentLevels);
+        },
+
         // ---------------- BINS ----------------
 
         async getAllBins() {
@@ -342,7 +450,7 @@ resetWeather() {
 
             this.bins = res.data;
 
-            this.checkTemperatureWarnings();
+            await this.checkTemperatureWarnings();
         },
 
         async addBin() {
@@ -365,7 +473,7 @@ resetWeather() {
 
             this.showForm = false;
 
-            this.checkTemperatureWarnings();
+            await this.checkTemperatureWarnings();
         },
 
         async emptyBin(bin) {
@@ -388,7 +496,9 @@ resetWeather() {
                 this.bins[index] = res.data;
             }
 
-            this.checkTemperatureWarnings();
+            this.resetSentTemperatureWarningLevels(res.data);
+
+            await this.checkTemperatureWarnings();
         },
 
         async saveEdit(id) {
@@ -412,14 +522,11 @@ resetWeather() {
 
             this.bins[index] = res.data;
 
-            await this.sendTemperatureWarningIfNeeded(
-                previousBin,
-                res.data
-            );
-
             this.editId = null;
 
-            this.checkTemperatureWarnings();
+            this.resetSentTemperatureWarningLevels(res.data);
+
+            await this.checkTemperatureWarnings();
         },
 
         async deleteBin(bin) {
@@ -439,7 +546,7 @@ resetWeather() {
                 b => b.id !== bin.id
             );
 
-            this.checkTemperatureWarnings();
+            await this.checkTemperatureWarnings();
         },
 
         startEdit(bin) {
@@ -464,7 +571,7 @@ resetWeather() {
 
             this.locations = res.data;
 
-            this.checkTemperatureWarnings();
+            await this.checkTemperatureWarnings();
         },
 
         async addLocation() {
@@ -492,7 +599,7 @@ resetWeather() {
 
             this.newLocation = "";
 
-            this.checkTemperatureWarnings();
+            await this.checkTemperatureWarnings();
         },
 
         async updateLocation(loc) {
@@ -506,7 +613,7 @@ resetWeather() {
                 this.authConfig()
             );
 
-            this.checkTemperatureWarnings();
+            await this.checkTemperatureWarnings();
         },
 
         async deleteLocation(id) {
@@ -523,7 +630,7 @@ resetWeather() {
                     l => l.id !== id
                 );
 
-            this.checkTemperatureWarnings();
+            await this.checkTemperatureWarnings();
         },
 
         // ---------------- NOTIFICATIONS ----------------
@@ -591,43 +698,6 @@ resetWeather() {
                 location.isIndoor === "false";
         },
 
-        async sendTemperatureWarningIfNeeded(previousBin, updatedBin) {
-
-            if (!previousBin || !updatedBin || !this.weather) {
-                return;
-            }
-
-            const previousLevel =
-                Number(previousBin.fillLevel);
-
-            const currentLevel =
-                Number(updatedBin.fillLevel);
-
-            const temperature =
-                Number(this.weather.temperature);
-
-            if (
-                !this.isFoodWaste(updatedBin) ||
-                !this.isOutdoorBin(updatedBin) ||
-                temperature <= 20 ||
-                currentLevel < 50 ||
-                currentLevel <= previousLevel ||
-                currentLevel % 10 !== 0
-            ) {
-                return;
-            }
-
-            await axios.post(
-                "https://localhost:7159/api/Telegram/temperature-test",
-                {
-                    binName: updatedBin.name || previousBin.name || "Madaffald",
-                    fillLevel: currentLevel,
-                    temperature
-                },
-                this.authConfig()
-            );
-        },
-
         async increaseFill(bin) {
 
             let newLevel =
@@ -659,14 +729,11 @@ resetWeather() {
 
             this.bins[index] = res.data;
 
-            await this.sendTemperatureWarningIfNeeded(
-                bin,
-                res.data
-            );
-
             await this.getNotifications();
 
-            this.checkTemperatureWarnings();
+            this.resetSentTemperatureWarningLevels(res.data);
+
+            await this.checkTemperatureWarnings();
         },
 
         goToDetails(binId) {
@@ -748,27 +815,46 @@ resetWeather() {
 
     async mounted() {
 
-        await this.getAllBins();
+        try {
+            await this.getLocations();
 
-        await this.getLocations();
+            await this.getAllBins();
 
-        await this.getNotifications();
+            await this.getNotifications();
 
-        await this.getWeather();
+            await this.getWeather();
 
-        this.checkTemperatureWarnings();
+            await this.checkTemperatureWarnings();
+        } catch (error) {
+            this.handleApiError(
+                error,
+                "Kunne ikke hente data fra API'et. Tjek backend/CORS."
+            );
+        }
 
         setInterval(() => {
 
-            this.getNotifications();
+            this.getNotifications().catch(error => {
+                this.handleApiError(
+                    error,
+                    "Kunne ikke hente notifikationer."
+                );
+            });
 
         }, 3000);
 
         setInterval(async () => {
 
-            await this.getWeather();
+            try {
+                await this.getWeather();
 
-            this.checkTemperatureWarnings();
+                await this.checkTemperatureWarnings();
+            } catch (error) {
+                this.handleApiError(
+                    error,
+                    "Kunne ikke opdatere vejrdata."
+                );
+            }
 
         }, 3600000);
     }
