@@ -762,7 +762,7 @@ resetWeather() {
 
             this.getNotifications();
 
-        }, 5000);
+        }, 3000);
 
         setInterval(async () => {
 
