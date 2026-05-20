@@ -3,7 +3,7 @@ Vue.createApp({
     data() {
         return {
 
-            authurl: "https://localhost:7159/api/auth/login",
+            authurl: "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net/api/auth/login",
 
             auth: {
                 username: "",
