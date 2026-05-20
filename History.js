@@ -1,4 +1,4 @@
-const historyUrl = "https://localhost:7159/api/EmptyHistory";
+const historyUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net/api/EmptyHistory";
 
 Vue.createApp({
 
