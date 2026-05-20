@@ -217,13 +217,27 @@ async resetWeather() {
 
         async checkTemperatureWarnings() {
 
-            if (
-                !this.weather ||
-                this.bins.length === 0 ||
-                this.locations.length === 0
-            ) {
-                return;
-            }
+            const settings = this.getSettings();
+
+    if(!settings.temperatureNotifications){
+
+        this.temperatureWarnings=[];
+
+        localStorage.setItem(
+            "temperatureWarnings",
+            JSON.stringify([])
+        );
+
+        return;
+    }
+
+    if (
+        !this.weather ||
+        this.bins.length === 0 ||
+        this.locations.length === 0
+    ) {
+        return;
+    }
 
             this.temperatureWarnings = [];
             const sentLevels =
@@ -305,10 +319,19 @@ async resetWeather() {
                         fillLevel: bin.fillLevel
                     });
 
-                    await this.sendTemperatureWarningForLevel(
-                        bin,
-                        sentLevels
-                    );
+                    const settings=this.getSettings();
+
+if(
+settings.temperatureNotifications &&
+settings.telegramEnabled
+){
+
+await this.sendTemperatureWarningForLevel(
+    bin,
+    sentLevels
+);
+
+}
                 }
             }
 
@@ -440,9 +463,42 @@ async resetWeather() {
         },
 
         // ---------------- BINS ----------------
+isSensorOffline(bin){
 
+    if(!bin.lastSensorReading){
+        return true;
+    }
+
+    const lastReading =
+        new Date(bin.lastSensorReading);
+
+    const now = new Date();
+
+    const diffHours =
+        (now-lastReading)/(1000*60*60);
+
+    return diffHours >= 24;
+},
+isSensorOnline(bin){
+
+    if(!bin.lastSensorReading){
+        return false;
+    }
+
+    const lastReading =
+        new Date(bin.lastSensorReading);
+
+    const now = new Date();
+
+    const diffHours =
+        (now-lastReading)/(1000*60*60);
+
+    return diffHours < 24;
+},
         async getAllBins() {
-
+if (this.editId !== null) {
+        return;
+    }
             const res = await axios.get(
                 baseUrl,
                 this.authConfig()
@@ -493,7 +549,7 @@ async resetWeather() {
 
             if (index !== -1) {
 
-                this.bins[index] = res.data;
+                this.bins.splice(index, 1, res.data);
             }
 
             this.resetSentTemperatureWarningLevels(res.data);
@@ -520,7 +576,7 @@ async resetWeather() {
                 b => b.id === id
             );
 
-            this.bins[index] = res.data;
+            this.bins.splice(index, 1, res.data);
 
             this.editId = null;
 
@@ -634,18 +690,38 @@ async resetWeather() {
         },
 
         // ---------------- NOTIFICATIONS ----------------
+getSettings(){
 
+return JSON.parse(
+localStorage.getItem(
+"notificationSettings"
+)) || {
+
+fillNotifications:true,
+temperatureNotifications:true,
+telegramEnabled:true
+
+};
+
+},
         async getNotifications() {
 
-            const res = await axios.get(
+    const settings=this.getSettings();
 
-                notificationUrl,
+    if(!settings.fillNotifications){
 
-                this.authConfig()
-            );
+        this.notifications=[];
 
-            this.notifications = res.data;
-        },
+        return;
+    }
+
+    const res = await axios.get(
+        notificationUrl,
+        this.authConfig()
+    );
+
+    this.notifications=res.data;
+},
 
         async markAsRead(id) {
 
@@ -677,12 +753,11 @@ async resetWeather() {
         },
 
         isFoodWaste(bin) {
-
-            return bin.wasteType === "Organic" ||
-                bin.wasteType === "Madaffald" ||
-                bin.wasteType === "Food" ||
-                bin.wasteType === 2;
-        },
+    return bin.wasteType === "Organic" ||
+           bin.wasteType === "Madaffald" ||
+           bin.wasteType === "Food"     ||
+           bin.wasteType === 2;
+},
 
         isOutdoorBin(bin) {
 
@@ -727,7 +802,7 @@ async resetWeather() {
                 b => b.id === bin.id
             );
 
-            this.bins[index] = res.data;
+            this.bins.splice(index, 1, res.data);
 
             await this.getNotifications();
 
@@ -791,28 +866,17 @@ async resetWeather() {
             return "text-danger";
         },
 
-        translateWaste(type) {
-
-            switch (type) {
-
-                case "General":
-                    return "Restaffald";
-
-                case "Paper":
-                    return "Papir";
-
-                case "Organic":
-                    return "Madaffald";
-
-                case "Metal":
-                    return "Metal";
-
-                default:
-                    return type;
-            }
-        }
-    },
-
+           translateWaste(type) {
+    switch (type) {
+        case "General": case 0: return "Restaffald";
+        case "Paper":   case 1: return "Papir";
+        case "Organic": case 2: return "Madaffald";
+        case "Metal":   case 3: return "Metal";
+        default: return type;
+    }
+}
+},
+    
     async mounted() {
 
         try {
@@ -857,6 +921,12 @@ async resetWeather() {
             }
 
         }, 3600000);
-    }
-
+        setInterval(async () => {
+        try {
+            await this.getAllBins();
+        } catch (error) {
+            this.handleApiError(error, "Kunne ikke opdatere skraldespande.");
+        }
+    }, 10000);
+}
 }).mount("#app");
