@@ -1,9 +1,12 @@
 const apiBaseUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net";
+//const apiBaseUrl ="https://localhost:7159";
+//const apiBaseUrl ="https://127.0.0.1:7159";
 const baseUrl = `${apiBaseUrl}/api/TrashBinTracker`;
 const locationUrl = `${apiBaseUrl}/api/Location`;
 const notificationUrl = `${apiBaseUrl}/api/Notification`;
 const weatherUrl = `${apiBaseUrl}/api/Weather`;
 const telegramTemperatureUrl = `${apiBaseUrl}/api/Telegram/temperature-test`;
+const languageUrl = `${apiBaseUrl}/api/Language`;
 const sensorOfflineTimeoutMs = 15000;
 
 Vue.createApp({
@@ -46,7 +49,8 @@ Vue.createApp({
 
             jwtToken: localStorage.getItem("token"),
             role: localStorage.getItem("role"),
-            username: localStorage.getItem("username")
+            username: localStorage.getItem("username"),
+            selectedLanguage: "Danish"
         };
     },
 
@@ -62,6 +66,34 @@ Vue.createApp({
     },
 
     methods: {
+
+        async getLanguage() {
+
+            const res = await axios.get(
+                languageUrl
+            );
+
+            this.selectedLanguage = res.data;
+        },
+
+        async updateLanguage() {
+
+            await axios.post(
+                languageUrl,
+                JSON.stringify(this.selectedLanguage),
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${this.jwtToken}`
+                    }
+                }
+            );
+
+            console.log(
+                "Language changed to:",
+                this.selectedLanguage
+            );
+        },
 
         // ---------------- AUTH ----------------
 
@@ -159,60 +191,60 @@ Vue.createApp({
             }
         },
 
-async setTestWeather() {
+        async setTestWeather() {
 
-    if (!this.weather) {
-        return;
-    }
+            if (!this.weather) {
+                return;
+            }
 
-    this.weather.temperature =
-        Number(this.testTemperature);
+            this.weather.temperature =
+                Number(this.testTemperature);
 
-    await this.checkTemperatureWarnings();
-},
-async setActiveSensorBin(bin) {
+            await this.checkTemperatureWarnings();
+        },
+        async setActiveSensorBin(bin) {
 
-    try {
-        await axios.put(
-            `${baseUrl}/${bin.id}/active-sensor`,
-            null,
-            this.authConfig()
-        );
-    } catch (error) {
-        this.handleApiError(
-            error,
-            "Kunne ikke vælge aktiv sensor."
-        );
+            try {
+                await axios.put(
+                    `${baseUrl}/${bin.id}/active-sensor`,
+                    null,
+                    this.authConfig()
+                );
+            } catch (error) {
+                this.handleApiError(
+                    error,
+                    "Kunne ikke vælge aktiv sensor."
+                );
 
-        return;
-    }
+                return;
+            }
 
-    for (const b of this.bins) {
-        b.isActiveSensorBin = false;
-    }
+            for (const b of this.bins) {
+                b.isActiveSensorBin = false;
+            }
 
-    const index = this.bins.findIndex(
-        b => b.id === bin.id
-    );
+            const index = this.bins.findIndex(
+                b => b.id === bin.id
+            );
 
-    if (index !== -1) {
-        this.bins[index].isActiveSensorBin = true;
-    }
+            if (index !== -1) {
+                this.bins[index].isActiveSensorBin = true;
+            }
 
-    this.apiError = "";
-},
-async resetWeather() {
+            this.apiError = "";
+        },
+        async resetWeather() {
 
-    if (!this.originalWeather) {
-        return;
-    }
+            if (!this.originalWeather) {
+                return;
+            }
 
-    this.weather = {
-        ...this.originalWeather
-    };
+            this.weather = {
+                ...this.originalWeather
+            };
 
-    await this.checkTemperatureWarnings();
-},
+            await this.checkTemperatureWarnings();
+        },
 
         // ---------------- TEMPERATURE WARNINGS ----------------
 
@@ -220,25 +252,25 @@ async resetWeather() {
 
             const settings = this.getSettings();
 
-    if(!settings.temperatureNotifications){
+            if (!settings.temperatureNotifications) {
 
-        this.temperatureWarnings=[];
+                this.temperatureWarnings = [];
 
-        localStorage.setItem(
-            "temperatureWarnings",
-            JSON.stringify([])
-        );
+                localStorage.setItem(
+                    "temperatureWarnings",
+                    JSON.stringify([])
+                );
 
-        return;
-    }
+                return;
+            }
 
-    if (
-        !this.weather ||
-        this.bins.length === 0 ||
-        this.locations.length === 0
-    ) {
-        return;
-    }
+            if (
+                !this.weather ||
+                this.bins.length === 0 ||
+                this.locations.length === 0
+            ) {
+                return;
+            }
 
             this.temperatureWarnings = [];
             const sentLevels =
@@ -320,19 +352,19 @@ async resetWeather() {
                         fillLevel: bin.fillLevel
                     });
 
-                    const settings=this.getSettings();
+                    const settings = this.getSettings();
 
-if(
-settings.temperatureNotifications &&
-settings.telegramEnabled
-){
+                    if (
+                        settings.temperatureNotifications &&
+                        settings.telegramEnabled
+                    ) {
 
-await this.sendTemperatureWarningForLevel(
-    bin,
-    sentLevels
-);
+                        await this.sendTemperatureWarningForLevel(
+                            bin,
+                            sentLevels
+                        );
 
-}
+                    }
                 }
             }
 
@@ -464,64 +496,64 @@ await this.sendTemperatureWarningForLevel(
         },
 
         // ---------------- BINS ----------------
-parseSensorReadingDate(value){
+        parseSensorReadingDate(value) {
 
-    if(!value){
-        return null;
-    }
+            if (!value) {
+                return null;
+            }
 
-    const text =
-        String(value);
+            const text =
+                String(value);
 
-    const hasTimeZone =
-        /z$|[+-]\d{2}:\d{2}$/i.test(text);
+            const hasTimeZone =
+                /z$|[+-]\d{2}:\d{2}$/i.test(text);
 
-    return new Date(hasTimeZone ? text : `${text}Z`);
-},
-isSensorOffline(bin){
+            return new Date(hasTimeZone ? text : `${text}Z`);
+        },
+        isSensorOffline(bin) {
 
-    if(!bin.lastSensorReading){
-        return true;
-    }
+            if (!bin.lastSensorReading) {
+                return true;
+            }
 
-    const lastReading =
-        this.parseSensorReadingDate(bin.lastSensorReading);
+            const lastReading =
+                this.parseSensorReadingDate(bin.lastSensorReading);
 
-    if(!lastReading || Number.isNaN(lastReading.getTime())){
-        return true;
-    }
+            if (!lastReading || Number.isNaN(lastReading.getTime())) {
+                return true;
+            }
 
-    const now = new Date();
+            const now = new Date();
 
-    const diffMs =
-        now - lastReading;
+            const diffMs =
+                now - lastReading;
 
-    return diffMs >= sensorOfflineTimeoutMs;
-},
-isSensorOnline(bin){
+            return diffMs >= sensorOfflineTimeoutMs;
+        },
+        isSensorOnline(bin) {
 
-    if(!bin.lastSensorReading){
-        return false;
-    }
+            if (!bin.lastSensorReading) {
+                return false;
+            }
 
-    const lastReading =
-        this.parseSensorReadingDate(bin.lastSensorReading);
+            const lastReading =
+                this.parseSensorReadingDate(bin.lastSensorReading);
 
-    if(!lastReading || Number.isNaN(lastReading.getTime())){
-        return false;
-    }
+            if (!lastReading || Number.isNaN(lastReading.getTime())) {
+                return false;
+            }
 
-    const now = new Date();
+            const now = new Date();
 
-    const diffMs =
-        now - lastReading;
+            const diffMs =
+                now - lastReading;
 
-    return diffMs < sensorOfflineTimeoutMs;
-},
+            return diffMs < sensorOfflineTimeoutMs;
+        },
         async getAllBins() {
-if (this.editId !== null) {
-        return;
-    }
+            if (this.editId !== null) {
+                return;
+            }
             const res = await axios.get(
                 baseUrl,
                 this.authConfig()
@@ -713,38 +745,38 @@ if (this.editId !== null) {
         },
 
         // ---------------- NOTIFICATIONS ----------------
-getSettings(){
+        getSettings() {
 
-return JSON.parse(
-localStorage.getItem(
-"notificationSettings"
-)) || {
+            return JSON.parse(
+                localStorage.getItem(
+                    "notificationSettings"
+                )) || {
 
-fillNotifications:true,
-temperatureNotifications:true,
-telegramEnabled:true
+                fillNotifications: true,
+                temperatureNotifications: true,
+                telegramEnabled: true
 
-};
+            };
 
-},
+        },
         async getNotifications() {
 
-    const settings=this.getSettings();
+            const settings = this.getSettings();
 
-    if(!settings.fillNotifications){
+            if (!settings.fillNotifications) {
 
-        this.notifications=[];
+                this.notifications = [];
 
-        return;
-    }
+                return;
+            }
 
-    const res = await axios.get(
-        notificationUrl,
-        this.authConfig()
-    );
+            const res = await axios.get(
+                notificationUrl,
+                this.authConfig()
+            );
 
-    this.notifications=res.data;
-},
+            this.notifications = res.data;
+        },
 
         async markAsRead(id) {
 
@@ -776,11 +808,11 @@ telegramEnabled:true
         },
 
         isFoodWaste(bin) {
-    return bin.wasteType === "Organic" ||
-           bin.wasteType === "Madaffald" ||
-           bin.wasteType === "Food"     ||
-           bin.wasteType === 2;
-},
+            return bin.wasteType === "Organic" ||
+                bin.wasteType === "Madaffald" ||
+                bin.wasteType === "Food" ||
+                bin.wasteType === 2;
+        },
 
         isOutdoorBin(bin) {
 
@@ -889,17 +921,17 @@ telegramEnabled:true
             return "text-danger";
         },
 
-           translateWaste(type) {
-    switch (type) {
-        case "General": case 0: return "Restaffald";
-        case "Paper":   case 1: return "Papir";
-        case "Organic": case 2: return "Madaffald";
-        case "Metal":   case 3: return "Metal";
-        default: return type;
-    }
-}
-},
-    
+        translateWaste(type) {
+            switch (type) {
+                case "General": case 0: return "Restaffald";
+                case "Paper": case 1: return "Papir";
+                case "Organic": case 2: return "Madaffald";
+                case "Metal": case 3: return "Metal";
+                default: return type;
+            }
+        }
+    },
+
     async mounted() {
 
         try {
@@ -908,6 +940,8 @@ telegramEnabled:true
             await this.getAllBins();
 
             await this.getNotifications();
+
+            await this.getLanguage();
 
             await this.getWeather();
 
@@ -945,11 +979,11 @@ telegramEnabled:true
 
         }, 3600000);
         setInterval(async () => {
-        try {
-            await this.getAllBins();
-        } catch (error) {
-            this.handleApiError(error, "Kunne ikke opdatere skraldespande.");
-        }
-    }, 10000);
-}
+            try {
+                await this.getAllBins();
+            } catch (error) {
+                this.handleApiError(error, "Kunne ikke opdatere skraldespande.");
+            }
+        }, 10000);
+    }
 }).mount("#app");

@@ -138,20 +138,22 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             transition: 0.2s;
         }
-        .sensor-error{
 
-            color:#dc2626;
+        .sensor-error {
 
-            font-weight:bold;
+            color: #dc2626;
 
-            padding:8px;
+            font-weight: bold;
 
-            border-radius:10px;
+            padding: 8px;
 
-            background:#fee2e2;
+            border-radius: 10px;
 
-            border:1px solid #fecaca;
+            background: #fee2e2;
+
+            border: 1px solid #fecaca;
         }
+
         .card:hover {
             transform: translateY(-3px);
         }
@@ -257,7 +259,7 @@
                         🏠 Dashboard
                     </a>
 
-                    
+
                     <a href="History.html" class="menu-item">
                         📊 Historik
                     </a>
@@ -269,8 +271,27 @@
                     <a href="Settings.html" class="menu-item">
                         ⚙️ Indstillinger
                     </a>
+                    <div class="mt-4">
 
-                   
+                        <label class="form-label fw-semibold">
+                            Beskedsprog
+                        </label>
+
+                        <select v-model="selectedLanguage" @change="updateLanguage" class="form-select">
+
+                            <option value="Danish">
+                                Dansk
+                            </option>
+
+                            <option value="English">
+                                English
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
                 </div>
 
             </div>
@@ -514,9 +535,7 @@
 
                     <div v-for="bin in bins" :key="bin.id" class="col-md-6">
 
-                        <div
-                            class="card bin-card"
-                            :class="{
+                        <div class="card bin-card" :class="{
                             'border border-danger':
                             isTemperatureWarningBin(bin.id)
                             || isSensorOffline(bin)
@@ -651,7 +670,7 @@
                                     </strong>
 
                                 </div>
-                                
+
                                 <button class="btn btn-outline-secondary btn-sm details-btn"
                                     @click="goToDetails(bin.id)">
 
@@ -662,15 +681,15 @@
                             </div>
                             <div class="mt-2">
 
-                                    <small class="text-muted d-block">
-                                        Seneste måling
-                                    </small>
+                                <small class="text-muted d-block">
+                                    Seneste måling
+                                </small>
 
-                                    <strong>
-                                        {{ formatDate(bin.lastSensorReading) }}
-                                    </strong>
+                                <strong>
+                                    {{ formatDate(bin.lastSensorReading) }}
+                                </strong>
 
-                                </div>
+                            </div>
                             <button @click="emptyBin(bin)" class="btn btn-outline-success btn-sm w-100 mb-2">
 
                                 Marker som tømt
@@ -683,38 +702,29 @@
 
                             </button>
 
-                            <button
-                                v-if="role === 'Admin'"
-                                @click="setActiveSensorBin(bin)"
-                                class="btn btn-outline-primary btn-sm w-100 mt-2"
-                                :disabled="bin.isActiveSensorBin">
+                            <button v-if="role === 'Admin'" @click="setActiveSensorBin(bin)"
+                                class="btn btn-outline-primary btn-sm w-100 mt-2" :disabled="bin.isActiveSensorBin">
 
                                 {{ bin.isActiveSensorBin ? 'Aktiv sensor' : 'Vælg som aktiv sensor' }}
 
                             </button>
-                            <div
-    v-if="bin.isActiveSensorBin && isSensorOnline(bin)"
-    class="sensor-online mt-2">
+                            <div v-if="bin.isActiveSensorBin && isSensorOnline(bin)" class="sensor-online mt-2">
 
-    🟢 Sensor online
+                                🟢 Sensor online
 
-</div>
+                            </div>
 
-<div
-    v-else-if="bin.isActiveSensorBin && isSensorOffline(bin)"
-    class="sensor-error mt-2">
+                            <div v-else-if="bin.isActiveSensorBin && isSensorOffline(bin)" class="sensor-error mt-2">
 
-    🔴 Sensor offline
+                                🔴 Sensor offline
 
-</div>
+                            </div>
 
-<div
-    v-if="bin.isActiveSensorBin && isSensorOnline(bin)"
-    class="text-primary fw-bold mt-2">
+                            <div v-if="bin.isActiveSensorBin && isSensorOnline(bin)" class="text-primary fw-bold mt-2">
 
-    Aktiv sensor tilsluttet
+                                Aktiv sensor tilsluttet
 
-</div>
+                            </div>
 
                         </div>
 
