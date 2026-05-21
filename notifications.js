@@ -1,4 +1,4 @@
-const notificationUrl = "https://localhost:7159/api/Notification";
+const notificationUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net/api/Notification";
 
 Vue.createApp({
 
