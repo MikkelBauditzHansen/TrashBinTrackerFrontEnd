@@ -4,6 +4,7 @@ const locationUrl = `${apiBaseUrl}/api/Location`;
 const notificationUrl = `${apiBaseUrl}/api/Notification`;
 const weatherUrl = `${apiBaseUrl}/api/Weather`;
 const telegramTemperatureUrl = `${apiBaseUrl}/api/Telegram/temperature-test`;
+const sensorOfflineTimeoutMs = 15000;
 
 Vue.createApp({
 
@@ -463,6 +464,20 @@ await this.sendTemperatureWarningForLevel(
         },
 
         // ---------------- BINS ----------------
+parseSensorReadingDate(value){
+
+    if(!value){
+        return null;
+    }
+
+    const text =
+        String(value);
+
+    const hasTimeZone =
+        /z$|[+-]\d{2}:\d{2}$/i.test(text);
+
+    return new Date(hasTimeZone ? text : `${text}Z`);
+},
 isSensorOffline(bin){
 
     if(!bin.lastSensorReading){
@@ -470,14 +485,18 @@ isSensorOffline(bin){
     }
 
     const lastReading =
-        new Date(bin.lastSensorReading);
+        this.parseSensorReadingDate(bin.lastSensorReading);
+
+    if(!lastReading || Number.isNaN(lastReading.getTime())){
+        return true;
+    }
 
     const now = new Date();
 
-    const diffHours =
-        (now-lastReading)/(1000*60*60);
+    const diffMs =
+        now - lastReading;
 
-    return diffHours >= 24;
+    return diffMs >= sensorOfflineTimeoutMs;
 },
 isSensorOnline(bin){
 
@@ -486,14 +505,18 @@ isSensorOnline(bin){
     }
 
     const lastReading =
-        new Date(bin.lastSensorReading);
+        this.parseSensorReadingDate(bin.lastSensorReading);
+
+    if(!lastReading || Number.isNaN(lastReading.getTime())){
+        return false;
+    }
 
     const now = new Date();
 
-    const diffHours =
-        (now-lastReading)/(1000*60*60);
+    const diffMs =
+        now - lastReading;
 
-    return diffHours < 24;
+    return diffMs < sensorOfflineTimeoutMs;
 },
         async getAllBins() {
 if (this.editId !== null) {
