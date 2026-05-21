@@ -306,8 +306,7 @@ Vue.createApp({
                     Number(this.weather.temperature) > 20;
 
                 const fillOk =
-                    Number(bin.fillLevel) >= 50 &&
-                    Number(bin.fillLevel) % 10 === 0;
+                    Number(bin.fillLevel) >= 50;
 
                 console.log("TJEK:", {
 
