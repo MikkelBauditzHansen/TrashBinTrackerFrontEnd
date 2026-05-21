@@ -4,6 +4,7 @@ const locationUrl = `${apiBaseUrl}/api/Location`;
 const notificationUrl = `${apiBaseUrl}/api/Notification`;
 const weatherUrl = `${apiBaseUrl}/api/Weather`;
 const telegramTemperatureUrl = `${apiBaseUrl}/api/Telegram/temperature-test`;
+const sensorOfflineTimeoutMs = 15000;
 
 Vue.createApp({
 
@@ -158,72 +159,86 @@ Vue.createApp({
             }
         },
 
-        async setTestWeather() {
+async setTestWeather() {
 
-            if (!this.weather) {
-                return;
-            }
+    if (!this.weather) {
+        return;
+    }
 
-            this.weather.temperature =
-                Number(this.testTemperature);
+    this.weather.temperature =
+        Number(this.testTemperature);
 
-            await this.checkTemperatureWarnings();
-        },
-        async setActiveSensorBin(bin) {
+    await this.checkTemperatureWarnings();
+},
+async setActiveSensorBin(bin) {
 
-            try {
-                await axios.put(
-                    `${baseUrl}/${bin.id}/active-sensor`,
-                    null,
-                    this.authConfig()
-                );
-            } catch (error) {
-                this.handleApiError(
-                    error,
-                    "Kunne ikke vælge aktiv sensor."
-                );
+    try {
+        await axios.put(
+            `${baseUrl}/${bin.id}/active-sensor`,
+            null,
+            this.authConfig()
+        );
+    } catch (error) {
+        this.handleApiError(
+            error,
+            "Kunne ikke vælge aktiv sensor."
+        );
 
-                return;
-            }
+        return;
+    }
 
-            for (const b of this.bins) {
-                b.isActiveSensorBin = false;
-            }
+    for (const b of this.bins) {
+        b.isActiveSensorBin = false;
+    }
 
-            const index = this.bins.findIndex(
-                b => b.id === bin.id
-            );
+    const index = this.bins.findIndex(
+        b => b.id === bin.id
+    );
 
-            if (index !== -1) {
-                this.bins[index].isActiveSensorBin = true;
-            }
+    if (index !== -1) {
+        this.bins[index].isActiveSensorBin = true;
+    }
 
-            this.apiError = "";
-        },
-        async resetWeather() {
+    this.apiError = "";
+},
+async resetWeather() {
 
-            if (!this.originalWeather) {
-                return;
-            }
+    if (!this.originalWeather) {
+        return;
+    }
 
-            this.weather = {
-                ...this.originalWeather
-            };
+    this.weather = {
+        ...this.originalWeather
+    };
 
-            await this.checkTemperatureWarnings();
-        },
+    await this.checkTemperatureWarnings();
+},
 
         // ---------------- TEMPERATURE WARNINGS ----------------
 
         async checkTemperatureWarnings() {
 
-            if (
-                !this.weather ||
-                this.bins.length === 0 ||
-                this.locations.length === 0
-            ) {
-                return;
-            }
+            const settings = this.getSettings();
+
+    if(!settings.temperatureNotifications){
+
+        this.temperatureWarnings=[];
+
+        localStorage.setItem(
+            "temperatureWarnings",
+            JSON.stringify([])
+        );
+
+        return;
+    }
+
+    if (
+        !this.weather ||
+        this.bins.length === 0 ||
+        this.locations.length === 0
+    ) {
+        return;
+    }
 
             this.temperatureWarnings = [];
             const sentLevels =
@@ -305,10 +320,19 @@ Vue.createApp({
                         fillLevel: bin.fillLevel
                     });
 
-                    await this.sendTemperatureWarningForLevel(
-                        bin,
-                        sentLevels
-                    );
+                    const settings=this.getSettings();
+
+if(
+settings.temperatureNotifications &&
+settings.telegramEnabled
+){
+
+await this.sendTemperatureWarningForLevel(
+    bin,
+    sentLevels
+);
+
+}
                 }
             }
 
@@ -440,9 +464,64 @@ Vue.createApp({
         },
 
         // ---------------- BINS ----------------
+parseSensorReadingDate(value){
 
+    if(!value){
+        return null;
+    }
+
+    const text =
+        String(value);
+
+    const hasTimeZone =
+        /z$|[+-]\d{2}:\d{2}$/i.test(text);
+
+    return new Date(hasTimeZone ? text : `${text}Z`);
+},
+isSensorOffline(bin){
+
+    if(!bin.lastSensorReading){
+        return true;
+    }
+
+    const lastReading =
+        this.parseSensorReadingDate(bin.lastSensorReading);
+
+    if(!lastReading || Number.isNaN(lastReading.getTime())){
+        return true;
+    }
+
+    const now = new Date();
+
+    const diffMs =
+        now - lastReading;
+
+    return diffMs >= sensorOfflineTimeoutMs;
+},
+isSensorOnline(bin){
+
+    if(!bin.lastSensorReading){
+        return false;
+    }
+
+    const lastReading =
+        this.parseSensorReadingDate(bin.lastSensorReading);
+
+    if(!lastReading || Number.isNaN(lastReading.getTime())){
+        return false;
+    }
+
+    const now = new Date();
+
+    const diffMs =
+        now - lastReading;
+
+    return diffMs < sensorOfflineTimeoutMs;
+},
         async getAllBins() {
-
+if (this.editId !== null) {
+        return;
+    }
             const res = await axios.get(
                 baseUrl,
                 this.authConfig()
@@ -493,7 +572,7 @@ Vue.createApp({
 
             if (index !== -1) {
 
-                this.bins[index] = res.data;
+                this.bins.splice(index, 1, res.data);
             }
 
             this.resetSentTemperatureWarningLevels(res.data);
@@ -520,7 +599,7 @@ Vue.createApp({
                 b => b.id === id
             );
 
-            this.bins[index] = res.data;
+            this.bins.splice(index, 1, res.data);
 
             this.editId = null;
 
@@ -634,18 +713,38 @@ Vue.createApp({
         },
 
         // ---------------- NOTIFICATIONS ----------------
+getSettings(){
 
+return JSON.parse(
+localStorage.getItem(
+"notificationSettings"
+)) || {
+
+fillNotifications:true,
+temperatureNotifications:true,
+telegramEnabled:true
+
+};
+
+},
         async getNotifications() {
 
-            const res = await axios.get(
+    const settings=this.getSettings();
 
-                notificationUrl,
+    if(!settings.fillNotifications){
 
-                this.authConfig()
-            );
+        this.notifications=[];
 
-            this.notifications = res.data;
-        },
+        return;
+    }
+
+    const res = await axios.get(
+        notificationUrl,
+        this.authConfig()
+    );
+
+    this.notifications=res.data;
+},
 
         async markAsRead(id) {
 
@@ -677,12 +776,11 @@ Vue.createApp({
         },
 
         isFoodWaste(bin) {
-
-            return bin.wasteType === "Organic" ||
-                bin.wasteType === "Madaffald" ||
-                bin.wasteType === "Food" ||
-                bin.wasteType === 2;
-        },
+    return bin.wasteType === "Organic" ||
+           bin.wasteType === "Madaffald" ||
+           bin.wasteType === "Food"     ||
+           bin.wasteType === 2;
+},
 
         isOutdoorBin(bin) {
 
@@ -727,7 +825,7 @@ Vue.createApp({
                 b => b.id === bin.id
             );
 
-            this.bins[index] = res.data;
+            this.bins.splice(index, 1, res.data);
 
             await this.getNotifications();
 
@@ -791,28 +889,17 @@ Vue.createApp({
             return "text-danger";
         },
 
-        translateWaste(type) {
-
-            switch (type) {
-
-                case "General":
-                    return "Restaffald";
-
-                case "Paper":
-                    return "Papir";
-
-                case "Organic":
-                    return "Madaffald";
-
-                case "Metal":
-                    return "Metal";
-
-                default:
-                    return type;
-            }
-        }
-    },
-
+           translateWaste(type) {
+    switch (type) {
+        case "General": case 0: return "Restaffald";
+        case "Paper":   case 1: return "Papir";
+        case "Organic": case 2: return "Madaffald";
+        case "Metal":   case 3: return "Metal";
+        default: return type;
+    }
+}
+},
+    
     async mounted() {
 
         try {
@@ -857,6 +944,12 @@ Vue.createApp({
             }
 
         }, 3600000);
-    }
-
+        setInterval(async () => {
+        try {
+            await this.getAllBins();
+        } catch (error) {
+            this.handleApiError(error, "Kunne ikke opdatere skraldespande.");
+        }
+    }, 10000);
+}
 }).mount("#app");

@@ -1,4 +1,4 @@
-const notificationUrl = "https://localhost:7159/api/Notification";
+const notificationUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net/api/Notification";
 
 Vue.createApp({
 
@@ -13,7 +13,7 @@ Vue.createApp({
 
             ) || [],
             username: localStorage.getItem("username")
-
+            
         };
     },
 
@@ -78,7 +78,7 @@ Vue.createApp({
             localStorage.removeItem("username");
             localStorage.removeItem("role");
 
-            window.location.href = "login.html";
+            window.location.href = "Login.html";
         }
     },
 

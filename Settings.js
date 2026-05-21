@@ -1,90 +1,66 @@
-const notificationUrl =
-    "https://localhost:7159/api/Notification";
-
 Vue.createApp({
 
-    data() {
+data(){
 
-        return {
+return{
+username:localStorage.getItem("username"),
+settings:{
 
-            receiveBinFull: true,
-            telegramEnabled: true
-        };
-    },
+fillNotifications:true,
+temperatureNotifications:true,
+telegramEnabled:true
 
-    methods: {
+},
 
-        // Hent status fra backend
-        async getSettings() {
+message:""
 
-            try {
+}
 
-                const binRes =
-                    await axios.get(
-                        `${notificationUrl}/binfull-status`
-                    );
+},
 
-                const telegramRes =
-                    await axios.get(
-                        `${notificationUrl}/telegram-status`
-                    );
+methods:{
+logout(){
 
-                this.receiveBinFull =
-                    binRes.data;
+localStorage.removeItem("token");
+localStorage.removeItem("username");
+localStorage.removeItem("role");
 
-                this.telegramEnabled =
-                    telegramRes.data;
+window.location.href="Login.html";
 
-            } catch (error) {
+},
+save(){
 
-                console.log(error);
-            }
-        },
+localStorage.setItem(
+"notificationSettings",
+JSON.stringify(this.settings)
+);
 
+if(!this.settings.temperatureNotifications){
 
-        // Toggle bin full notifications
-        async toggleBinFull() {
+localStorage.removeItem(
+"temperatureWarnings"
+);
 
-            try {
+}
 
-                const res =
-                    await axios.put(
-                        `${notificationUrl}/toggle-binfull`
-                    );
+this.message="Indstillinger gemt ✔";
 
-                this.receiveBinFull =
-                    res.data;
+}
 
-            } catch (error) {
+},
 
-                console.log(error);
-            }
-        },
+mounted(){
 
+const saved=localStorage.getItem(
+"notificationSettings"
+);
 
-        // Toggle telegram
-        async toggleTelegram() {
+if(saved){
 
-            try {
+this.settings=JSON.parse(saved);
 
-                const res =
-                    await axios.put(
-                        `${notificationUrl}/toggle-telegram`
-                    );
+}
 
-                this.telegramEnabled =
-                    res.data;
-
-            } catch (error) {
-
-                console.log(error);
-            }
-        }
-    },
-
-    mounted() {
-
-        this.getSettings();
-    }
+}
 
 }).mount("#app");
