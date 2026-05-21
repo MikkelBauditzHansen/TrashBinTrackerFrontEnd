@@ -715,7 +715,7 @@
 </div>
 
 <div
-    v-if="bin.isActiveSensorBin"
+    v-if="bin.isActiveSensorBin && isSensorOnline(bin)"
     class="text-primary fw-bold mt-2">
 
     Aktiv sensor tilsluttet
