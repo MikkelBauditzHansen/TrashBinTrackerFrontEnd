@@ -15,6 +15,7 @@ Vue.createApp({
 
             ) || [],
             username: localStorage.getItem("username"),
+            role: localStorage.getItem("role"),
             jwtToken: localStorage.getItem("token"),
             selectedLanguage: "Danish"
             

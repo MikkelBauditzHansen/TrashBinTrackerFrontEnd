@@ -168,7 +168,7 @@ body{
                     🔔 Notifikationer
                 </a>
 
-                <a href="Settings.html"
+                <a v-if="role === 'Admin'" href="Settings.html"
                    class="menu-item active">
 
                     ⚙️ Indstillinger
@@ -340,6 +340,7 @@ body{
             </div>
 
             <button
+                v-if="role === 'Admin'"
                 @click="updateFillNeeded(1, newFillWatchLevel)"
                 class="btn btn-info mt-4 w-100">
 

@@ -9,6 +9,7 @@ Vue.createApp({
             history: [],
             jwtToken: localStorage.getItem("token"),
             username: localStorage.getItem("username"),
+            role: localStorage.getItem("role"),
             selectedLanguage: "Danish"
         };
     },

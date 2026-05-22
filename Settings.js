@@ -8,6 +8,7 @@ Vue.createApp({
         return {
             username: localStorage.getItem("username"),
             token: localStorage.getItem("token"),
+            role: localStorage.getItem("role"),
             settings: {
                 fillNotifications: true,
                 temperatureNotifications: true,
@@ -100,6 +101,12 @@ Vue.createApp({
             );
         },
 
+        enforceAdminAccess() {
+            if (this.role !== "Admin") {
+                window.location.href = "Dashboard.html";
+            }
+        },
+
         async updateFillNeeded(id, fillLevel) {
             try {
                 const response = await axios.put(
@@ -130,6 +137,7 @@ Vue.createApp({
     },
 
     async mounted() {
+        this.enforceAdminAccess();
         await this.loadSettings();
         await this.getLanguage();
     }

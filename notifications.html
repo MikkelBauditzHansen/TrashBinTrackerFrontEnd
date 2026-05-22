@@ -196,7 +196,7 @@
                     🔔 Notifikationer
                 </a>
 
-                <a href="Settings.html" class="menu-item">
+                <a v-if="role === 'Admin'" href="Settings.html" class="menu-item">
                     ⚙️ Indstillinger
                 </a>
 

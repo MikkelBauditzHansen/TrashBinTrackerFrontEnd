@@ -265,7 +265,7 @@
                         🔔 Notifikationer
                     </a>
 
-                    <a href="Settings.html" class="menu-item">
+                    <a v-if="role === 'Admin'" href="Settings.html" class="menu-item">
                         ⚙️ Indstillinger
                     </a>
                     <div class="mt-4">
@@ -842,6 +842,7 @@
 
                         <!-- TEST WEATHER -->
 
+                        <div v-if="role === 'Admin'">
                         <label class="form-label fw-semibold">
                             Test temperatur
                         </label>
@@ -862,6 +863,7 @@
 
                             </button>
 
+                        </div>
                         </div>
 
                     </div>
