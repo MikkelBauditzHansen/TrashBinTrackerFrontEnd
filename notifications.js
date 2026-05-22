@@ -1,4 +1,6 @@
-const notificationUrl = "https://localhost:7159/api/Notification";
+const apiBaseUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net";
+const notificationUrl = `${apiBaseUrl}/api/Notification`;
+const languageUrl = `${apiBaseUrl}/api/Language`;
 
 Vue.createApp({
 
@@ -10,7 +12,13 @@ Vue.createApp({
 
             temperatureWarnings: JSON.parse(
                 localStorage.getItem("temperatureWarnings")
-            ) || []
+
+            ) || [],
+            username: localStorage.getItem("username"),
+            role: localStorage.getItem("role"),
+            jwtToken: localStorage.getItem("token"),
+            selectedLanguage: "Danish"
+            
         };
     },
 
@@ -30,6 +38,24 @@ Vue.createApp({
 
                 console.log(error);
             }
+        },
+
+        async getLanguage() {
+            const res = await axios.get(languageUrl);
+            this.selectedLanguage = res.data;
+        },
+
+        async updateLanguage() {
+            await axios.post(
+                languageUrl,
+                JSON.stringify(this.selectedLanguage),
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${this.jwtToken}`
+                    }
+                }
+            );
         },
 
         async markAsRead(id) {
@@ -68,12 +94,21 @@ Vue.createApp({
                     this.temperatureWarnings
                 )
             );
+        },
+        logout() {
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("username");
+            localStorage.removeItem("role");
+
+            window.location.href = "Login.html";
         }
     },
 
     mounted() {
 
         this.getNotifications();
+        this.getLanguage();
 
         setInterval(() => {
 

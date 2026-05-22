@@ -3,7 +3,7 @@ Vue.createApp({
     data() {
         return {
 
-            authurl: "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net//api/auth/login",
+            authurl: "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net/api/auth/login",
 
             auth: {
                 username: "",
@@ -32,7 +32,7 @@ Vue.createApp({
                 localStorage.setItem("username", this.auth.username);
 
                 // redirect
-                window.location.href = "index.html";
+                window.location.href = "Dashboard.html";
 
             }
 
