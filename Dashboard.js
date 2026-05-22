@@ -5,7 +5,7 @@ const notificationUrl = `${apiBaseUrl}/api/Notification`;
 const weatherUrl = `${apiBaseUrl}/api/Weather`;
 const telegramTemperatureUrl = `${apiBaseUrl}/api/Telegram/temperature-test`;
 const languageUrl = `${apiBaseUrl}/api/Language`;
-const sensorOfflineTimeoutMs = 15000;
+const sensorOfflineTimeoutMs = 18;
 
 Vue.createApp({
 
