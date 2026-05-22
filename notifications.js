@@ -1,4 +1,6 @@
-const notificationUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net/api/Notification";
+const apiBaseUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net";
+const notificationUrl = `${apiBaseUrl}/api/Notification`;
+const languageUrl = `${apiBaseUrl}/api/Language`;
 
 Vue.createApp({
 
@@ -12,7 +14,9 @@ Vue.createApp({
                 localStorage.getItem("temperatureWarnings")
 
             ) || [],
-            username: localStorage.getItem("username")
+            username: localStorage.getItem("username"),
+            jwtToken: localStorage.getItem("token"),
+            selectedLanguage: "Danish"
             
         };
     },
@@ -33,6 +37,24 @@ Vue.createApp({
 
                 console.log(error);
             }
+        },
+
+        async getLanguage() {
+            const res = await axios.get(languageUrl);
+            this.selectedLanguage = res.data;
+        },
+
+        async updateLanguage() {
+            await axios.post(
+                languageUrl,
+                JSON.stringify(this.selectedLanguage),
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${this.jwtToken}`
+                    }
+                }
+            );
         },
 
         async markAsRead(id) {
@@ -85,6 +107,7 @@ Vue.createApp({
     mounted() {
 
         this.getNotifications();
+        this.getLanguage();
 
         setInterval(() => {
 

@@ -1,4 +1,6 @@
-const historyUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net/api/EmptyHistory";
+const apiBaseUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net";
+const historyUrl = `${apiBaseUrl}/api/EmptyHistory`;
+const languageUrl = `${apiBaseUrl}/api/Language`;
 
 Vue.createApp({
 
@@ -6,7 +8,8 @@ Vue.createApp({
         return {
             history: [],
             jwtToken: localStorage.getItem("token"),
-            username: localStorage.getItem("username")
+            username: localStorage.getItem("username"),
+            selectedLanguage: "Danish"
         };
     },
 
@@ -36,6 +39,24 @@ Vue.createApp({
             this.history = res.data;
         },
 
+        async getLanguage() {
+            const res = await axios.get(languageUrl);
+            this.selectedLanguage = res.data;
+        },
+
+        async updateLanguage() {
+            await axios.post(
+                languageUrl,
+                JSON.stringify(this.selectedLanguage),
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${this.jwtToken}`
+                    }
+                }
+            );
+        },
+
         formatDate(date) {
             if (!date) return "Ukendt";
             return new Date(date).toLocaleString("da-DK");
@@ -50,8 +71,9 @@ Vue.createApp({
         }
     },
 
-    mounted() {
-        this.getHistory();
+    async mounted() {
+        await this.getHistory();
+        await this.getLanguage();
     }
 
 }).mount("#app");

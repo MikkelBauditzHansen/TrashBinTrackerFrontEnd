@@ -119,9 +119,6 @@
                     🏠 Dashboard
                 </a>
 
-                <a href="Dashboard.html" class="menu-item">
-                    🗑️ Mine skraldespande
-                </a>
 
                 <a href="History.html" class="menu-item active">
                     📊 Historik
@@ -135,9 +132,21 @@
                     ⚙️ Indstillinger
                 </a>
 
-                <a href="#" class="menu-item">
-                    ❓ Hjælp
-                </a>
+                <div class="mt-4">
+                    <label class="form-label fw-semibold">
+                        Beskedsprog
+                    </label>
+
+                    <select v-model="selectedLanguage" @change="updateLanguage" class="form-select">
+                        <option value="Danish">
+                            Dansk
+                        </option>
+
+                        <option value="English">
+                            English
+                        </option>
+                    </select>
+                </div>
 
             </div>
 
@@ -218,7 +227,7 @@
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-<script src="history.js"></script>
+<script src="History.js?v=20260522"></script>
 
 </body>
 </html>

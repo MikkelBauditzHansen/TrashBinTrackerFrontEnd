@@ -1,112 +1,137 @@
-const notificationUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net/api/Notification";
-const apiBaseUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net/api";
-
+const apiBaseUrl = "https://shstarthtml-drfseveaedgbfeac.swedencentral-01.azurewebsites.net";
+const notificationSettingsUrl = `${apiBaseUrl}/api/NotificationSettings`;
+const languageUrl = `${apiBaseUrl}/api/Language`;
 
 Vue.createApp({
 
-data(){
+    data() {
+        return {
+            username: localStorage.getItem("username"),
+            token: localStorage.getItem("token"),
+            settings: {
+                fillNotifications: true,
+                temperatureNotifications: true,
+                telegramEnabled: false
+            },
+            selectedLanguage: "Danish",
+            newFillWatchLevel: 0,
+            message: ""
+        };
+    },
 
-return{
-username:localStorage.getItem("username"),
-settings:{
+    methods: {
+        logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("username");
+            localStorage.removeItem("role");
 
-fillNotifications:true,
-temperatureNotifications:true,
-telegramEnabled:true
+            window.location.href = "Login.html";
+        },
 
-},
-newFillWatchLevel:0,
-message:""
+        async loadSettings() {
+            const saved = localStorage.getItem("notificationSettings");
 
-}
+            if (saved) {
+                this.settings = {
+                    ...this.settings,
+                    ...JSON.parse(saved)
+                };
+            }
 
-},
+            try {
+                const res = await axios.get(
+                    notificationSettingsUrl
+                );
 
-methods:{
-logout(){
+                this.settings = {
+                    fillNotifications: res.data.fillNotifications,
+                    temperatureNotifications: res.data.temperatureNotifications,
+                    telegramEnabled: res.data.telegramEnabled
+                };
 
-localStorage.removeItem("token");
-localStorage.removeItem("username");
-localStorage.removeItem("role");
+                localStorage.setItem(
+                    "notificationSettings",
+                    JSON.stringify(this.settings)
+                );
+            } catch (error) {
+                console.log("Kunne ikke hente settings fra API:", error);
+            }
+        },
 
-window.location.href="Login.html";
+        async save() {
+            if (!this.settings.temperatureNotifications) {
+                localStorage.removeItem("temperatureWarnings");
+            }
 
-},
-save(){
+            try {
+                await axios.put(
+                    notificationSettingsUrl,
+                    this.settings
+                );
 
-localStorage.setItem(
-"notificationSettings",
-JSON.stringify(this.settings)
-);
+                localStorage.setItem(
+                    "notificationSettings",
+                    JSON.stringify(this.settings)
+                );
 
-if(!this.settings.temperatureNotifications){
+                this.message = "Indstillinger gemt";
+            } catch (error) {
+                console.log("Kunne ikke gemme settings til API:", error);
 
-localStorage.removeItem(
-"temperatureWarnings"
-);
+                this.message = "Kunne ikke gemme indstillinger i API";
+            }
+        },
 
-}
+        async getLanguage() {
+            const res = await axios.get(languageUrl);
+            this.selectedLanguage = res.data;
+        },
 
-this.message="Indstillinger gemt ✔";
+        async updateLanguage() {
+            await axios.post(
+                languageUrl,
+                JSON.stringify(this.selectedLanguage),
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${this.token}`
+                    }
+                }
+            );
+        },
 
-},
+        async updateFillNeeded(id, fillLevel) {
+            try {
+                const response = await axios.put(
+                    `${apiBaseUrl}/api/Notification/${id}/UpdateFillNeeded?fill=${encodeURIComponent(fillLevel)}`,
+                    null,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${this.token}`,
+                            "Content-Type": "application/json"
+                        }
+                    }
+                );
 
-async updateFillNeeded(id, fillLevel){
+                if (response.status === 200) {
+                    this.message = "Påfyldningsniveau opdateret";
+                    return response.data;
+                }
+            } catch (error) {
+                console.log("Error updating fill level:", error);
 
-try{
+                if (error.response && error.response.status === 400) {
+                    this.message = "Fejl ved opdatering af påfyldningsniveau";
+                } else {
+                    this.message = "Der opstod en fejl";
+                }
+            }
+        }
+    },
 
-const token = localStorage.getItem("token");
-	const response = await axios.put(
-	`${apiBaseUrl}/Notification/${id}/UpdateFillNeeded?fill=${encodeURIComponent(fillLevel)}`,
-	null,
-	{
-	headers: {
-	"Authorization": `Bearer ${token}`,
-	"Content-Type": "application/json"
-	}
-	}
-	);
-
-if(response.status === 200){
-
-this.message = `Påfyldningsniveau opdateret ✔`;
-return response.data;
-
-}
-
-}catch(error){
-
-if(error.response && error.response.status === 400){
-
-this.message = "Fejl ved opdatering af påfyldningsniveau ✗";
-
-}else{
-
-this.message = "Der opstod en fejl ✗";
-
-}
-
-console.error("Error updating fill level:", error);
-throw error;
-
-}
-
-}
-
-},
-
-mounted(){
-
-const saved=localStorage.getItem(
-"notificationSettings"
-);
-
-if(saved){
-
-this.settings=JSON.parse(saved);
-
-}
-
-}
+    async mounted() {
+        await this.loadSettings();
+        await this.getLanguage();
+    }
 
 }).mount("#app");

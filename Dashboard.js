@@ -4,6 +4,7 @@ const locationUrl = `${apiBaseUrl}/api/Location`;
 const notificationUrl = `${apiBaseUrl}/api/Notification`;
 const weatherUrl = `${apiBaseUrl}/api/Weather`;
 const telegramTemperatureUrl = `${apiBaseUrl}/api/Telegram/temperature-test`;
+const languageUrl = `${apiBaseUrl}/api/Language`;
 const sensorOfflineTimeoutMs = 15000;
 
 Vue.createApp({
@@ -46,7 +47,8 @@ Vue.createApp({
 
             jwtToken: localStorage.getItem("token"),
             role: localStorage.getItem("role"),
-            username: localStorage.getItem("username")
+            username: localStorage.getItem("username"),
+            selectedLanguage: "Danish"
         };
     },
 
@@ -62,6 +64,34 @@ Vue.createApp({
     },
 
     methods: {
+
+        async getLanguage() {
+
+            const res = await axios.get(
+                languageUrl
+            );
+
+            this.selectedLanguage = res.data;
+        },
+
+        async updateLanguage() {
+
+            await axios.post(
+                languageUrl,
+                JSON.stringify(this.selectedLanguage),
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${this.jwtToken}`
+                    }
+                }
+            );
+
+            console.log(
+                "Language changed to:",
+                this.selectedLanguage
+            );
+        },
 
         // ---------------- AUTH ----------------
 
@@ -274,8 +304,7 @@ async resetWeather() {
                     Number(this.weather.temperature) > 20;
 
                 const fillOk =
-                    Number(bin.fillLevel) >= 50 &&
-                    Number(bin.fillLevel) % 10 === 0;
+                    Number(bin.fillLevel) >= 50;
 
                 console.log("TJEK:", {
 
@@ -846,8 +875,14 @@ telegramEnabled:true
                 return "Ikke registreret";
             }
 
-            return new Date(date)
-                .toLocaleString("da-DK");
+            const parsedDate =
+                this.parseSensorReadingDate(date);
+
+            if (!parsedDate) {
+                return "Ikke registreret";
+            }
+
+            return parsedDate.toLocaleString("da-DK");
         },
 
         getFillText(level) {
@@ -908,6 +943,8 @@ telegramEnabled:true
             await this.getAllBins();
 
             await this.getNotifications();
+
+            await this.getLanguage();
 
             await this.getWeather();
 
