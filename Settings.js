@@ -75,7 +75,15 @@ Vue.createApp({
                     JSON.stringify(this.settings)
                 );
 
-                this.message = "Indstillinger gemt";
+                let extraMessage = "";
+                if (this.role === "Admin" && this.newFillWatchLevel > 0) {
+                    const updated = await this.updateFillNeeded(1, this.newFillWatchLevel);
+                    extraMessage = updated
+                        ? " og påfyldningsniveau opdateret"
+                        : ", men påfyldningsniveau blev ikke opdateret";
+                }
+
+                this.message = `Indstillinger gemt${extraMessage}`;
             } catch (error) {
                 console.log("Kunne ikke gemme settings til API:", error);
 
@@ -120,18 +128,10 @@ Vue.createApp({
                     }
                 );
 
-                if (response.status === 200) {
-                    this.message = "Påfyldningsniveau opdateret";
-                    return response.data;
-                }
+                return response.status === 200;
             } catch (error) {
                 console.log("Error updating fill level:", error);
-
-                if (error.response && error.response.status === 400) {
-                    this.message = "Fejl ved opdatering af påfyldningsniveau";
-                } else {
-                    this.message = "Der opstod en fejl";
-                }
+                return false;
             }
         }
     },
